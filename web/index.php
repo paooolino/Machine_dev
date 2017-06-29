@@ -3,11 +3,14 @@ require("../vendor/autoload.php");
 
 $machine = new \Paooolino\Machine($_SERVER, true);
 
+$machine->addPlugin("links");
+$machine->addPlugin("forms");
+
 $machine->addRoute("/", [
 	"template" => "home.php",
 	"data" => [
-		"titolo" => "",
-		"testo" => "",
+		"titolo" => "Home page",
+		"testo" => "Questa è la homepage del sito.",
 		"foto" => ""
 	]
 ]);
@@ -15,8 +18,8 @@ $machine->addRoute("/", [
 $machine->addRoute("/chi-siamo/", [
 	"template" => "single.php",
 	"data" => [
-		"titolo" => "",
-		"testo" => "",
+		"titolo" => "Chi siamo",
+		"testo" => "Abbiamo facce che non conosciamo.",
 		"foto" => ""
 	]
 ]);
@@ -24,8 +27,8 @@ $machine->addRoute("/chi-siamo/", [
 $machine->addRoute("/registrati/", [
 	"template" => "single.php",
 	"data" => [
-		"titolo" => "",
-		"testo" => "",
+		"titolo" => "Registrazione",
+		"testo" => "{{FORM|Registrazione}}",
 		"foto" => ""
 	]
 ]);

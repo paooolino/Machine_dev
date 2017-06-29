@@ -39,8 +39,10 @@ class Machine {
 	private $routes;
 	private $SERVER;
 	private $debug;
+	private $plugins = [];
 	
 	const TEMPLATE_PATH = "templates/";
+	const PLUGINS_PATH = "plugins/";
 	
 	/**
 	 * Machine class constructor
@@ -53,6 +55,14 @@ class Machine {
 		$this->debug = $debug;
 	}
 	
+	public function addPlugin($name) {
+		$plugin_path = PLUGINS_PATH . $name . "/index.php"); 
+		if (file_exists($plugin_path)) {
+			include($plugin_path);
+			array_push($this->plugins, $name);
+		}
+	}
+	
 	public function addRoute($name, $opts) {
 		$this->routes[$name] = $opts;
 	}
@@ -61,6 +71,7 @@ class Machine {
 		$template = $this->get_template();
 		$data = $this->get_data();
 		$html = $this->populate_template($template, $data);
+		
 		
 		echo $html;
 		
@@ -94,11 +105,55 @@ class Machine {
 	}
 	
 	private function get_data() {
-		return [];
+		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
+			return [];
+		}
+		$route = $this->routes[$this->SERVER["REQUEST_URI"]];
+		return $route["data"];
 	}
 	
-	private function populate_template($template, $data) {
-		return $template;
+	private function populate_template($tpl, $data) {
+		// populate simple tag with data
+		foreach($data as $k => $v) {
+			$tpl = str_replace("{{".$k."}}", $v, $tpl);
+		}
+		
+		// find complex tags		
+		/*
+		$tags = [];
+		preg_match_all("/{{(.*)}}/", $tpl, $tags);
+		foreach ($tags[1] as $tag) {
+			$parts = explode("|", $tag);
+			if (count($parts) == 1) {
+				// simple tag.
+				$tpl = str_replace("{{" . $tag . "}}", $data[$tag], $tpl); 
+			}
+			if (count($parts) == 2) {
+				$command = $parts[0];
+				$value = $parts[1];
+				switch ($command) {
+					case "LINK":
+						$tpl = str_replace("{{" . $tag . "}}", $this->getLink($parts[1]), $tpl);
+						break;
+					case "FORM":
+						$tpl = str_replace("{{" . $tag . "}}", $this->getForm($parts[1]), $tpl);
+						break;						
+				}
+			}
+		}
+		*/
+		return $tpl;
 	}
 	
+	/*
+	private function getLink($route) {
+		return $this->SERVER["REQUEST_SCHEME"] .
+			"://" . $this->SERVER["HTTP_HOST"] .
+			$route;
+	}
+	
+	private function getForm($formname) {
+		return "FORM";
+	}
+	*/
 }
