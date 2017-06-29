@@ -25,7 +25,7 @@ $machine->addRoute("/registrati/", [
 	"template" => "single.php",
 	"data" => [
 		"titolo" => "",
-		"testo" => "{{REGISTER_FORM}}",
+		"testo" => "",
 		"foto" => ""
 	]
 ]);
