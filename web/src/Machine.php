@@ -42,7 +42,13 @@ class Machine {
 	
 	const TEMPLATE_PATH = "templates/";
 	
-	public function __construct($server, $debug = false) {
+	/**
+	 * Machine class constructor
+	 *
+	 * @param $server Array The $_SERVER array
+	 * @param $debug bool	Whether debug mode is enabled
+	 */
+	 public function __construct($server, $debug = false) {
 		$this->SERVER = $server;
 		$this->debug = $debug;
 	}
