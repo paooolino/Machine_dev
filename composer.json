@@ -1,0 +1,16 @@
+{
+    "name": "paooolino/Machine",
+    "authors": [
+        {
+            "name": "paooolino",
+            "email": "paooolino@gmail.com"
+        }
+    ],
+    "require": {
+    },
+    "autoload": {
+        "psr-4": {
+            "Paooolino\\": "web/src"
+        }
+    }
+}
