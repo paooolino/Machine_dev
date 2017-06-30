@@ -39,7 +39,7 @@ class Machine {
 	private $routes;
 	private $SERVER;
 	private $debug;
-	private $plugins = [];
+	private $plugins;
 	
 	const TEMPLATE_PATH = "templates/";
 	const PLUGINS_PATH = "plugins/";
@@ -53,14 +53,7 @@ class Machine {
 	 public function __construct($server, $debug = false) {
 		$this->SERVER = $server;
 		$this->debug = $debug;
-	}
-	
-	public function addPlugin($name) {
-		$plugin_path = PLUGINS_PATH . $name . "/index.php"); 
-		if (file_exists($plugin_path)) {
-			include($plugin_path);
-			array_push($this->plugins, $name);
-		}
+		$this->plugins = [];
 	}
 	
 	public function addRoute($name, $opts) {
@@ -72,7 +65,6 @@ class Machine {
 		$data = $this->get_data();
 		$html = $this->populate_template($template, $data);
 		
-		
 		echo $html;
 		
 		if ($this->debug) {
@@ -80,6 +72,24 @@ class Machine {
 		}
 	}
 	
+	public function addPlugin($name) {
+		$plugin_path = self::PLUGINS_PATH . $name . ".php"; 
+		if (file_exists($plugin_path)) {
+			include($plugin_path);
+			$className = "\\Plugin\\" . $name;
+			$this->plugins[$name] = new $className($this);
+		} else {
+			die("Unable to find " . $plugin_path);
+		}
+	}
+	
+	public function getState() {
+		return [
+			"SERVER" => $this->SERVER,
+			"routes" => $this->routes			
+		];
+	}
+
 	private function print_debug_info() {
 		echo "<!--";
 		print_r($this->SERVER);
@@ -117,43 +127,26 @@ class Machine {
 		foreach($data as $k => $v) {
 			$tpl = str_replace("{{".$k."}}", $v, $tpl);
 		}
-		
-		// find complex tags		
-		/*
+
+		// find plugin tags
+		//	eg {{<plugin_name>|<param1>|<param2>}}
 		$tags = [];
-		preg_match_all("/{{(.*)}}/", $tpl, $tags);
-		foreach ($tags[1] as $tag) {
-			$parts = explode("|", $tag);
-			if (count($parts) == 1) {
-				// simple tag.
-				$tpl = str_replace("{{" . $tag . "}}", $data[$tag], $tpl); 
-			}
-			if (count($parts) == 2) {
-				$command = $parts[0];
-				$value = $parts[1];
-				switch ($command) {
-					case "LINK":
-						$tpl = str_replace("{{" . $tag . "}}", $this->getLink($parts[1]), $tpl);
-						break;
-					case "FORM":
-						$tpl = str_replace("{{" . $tag . "}}", $this->getForm($parts[1]), $tpl);
-						break;						
+		preg_match_all("/{{(.*?)\|(.*?)}}/", $tpl, $tags);
+		for ($i = 0; $i < count($tags[0]); $i++) {
+			$pluginName = $tags[1][$i];
+			if (isset($this->plugins[$pluginName])) {
+				$parts = explode("|", $tags[2][$i]);
+				$pluginMethod = array_shift($parts);
+				if (method_exists($this->plugins[$pluginName], $pluginMethod)) {
+					$value = $this->plugins[$pluginName]->{$pluginMethod}($parts);
+					$tpl = str_replace($tags[0][$i], $value, $tpl);
+				} else {
+					die("Tag plugin not managed " . $pluginName . "->" . $pluginMethod);
 				}
+			} else {
+				die("Plugin not managed " . $pluginName);
 			}
 		}
-		*/
 		return $tpl;
 	}
-	
-	/*
-	private function getLink($route) {
-		return $this->SERVER["REQUEST_SCHEME"] .
-			"://" . $this->SERVER["HTTP_HOST"] .
-			$route;
-	}
-	
-	private function getForm($formname) {
-		return "FORM";
-	}
-	*/
 }

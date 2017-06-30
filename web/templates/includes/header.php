@@ -7,9 +7,9 @@
 		<div class="logo">Site name</div>
 		<div class="menu">
 			<ul>
-				<li><a href="{{LINK|/}}">Home</a></li>
-				<li><a href="{{LINK|/chi-siamo/}}">Chi siamo</a></li>
-				<li><a href="{{LINK|/registrati/}}">Registrati</a></li>
+				<li><a href="{{Link|Get|/}}">Home</a></li>
+				<li><a href="{{Link|Get|/chi-siamo/}}">Chi siamo</a></li>
+				<li><a href="{{Link|Get|/registrati/}}">Registrati</a></li>
 			</ul>
 		</div>
 	</header>
