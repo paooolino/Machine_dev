@@ -1,46 +1,40 @@
 <?php
 
+/**
+ * The author namespace.
+ */
 namespace Paooolino;
 
-/*
-request > side effect	
-				> template 				>
-				> data 						> output
-
-side effect/template/data may be conditioned by application status
-
-SIDE EFFECTS
-send mail
-write into db
-write into file
-set cookies
-
-TEMPLATING
-template: use a bunch of templates
-	homepage
-	single page
-	list page
-	
-content widgets
-	login form
-	register form
-	lost password form
-	
-scripts
-	form validation
-	
-DATA
-read data from database
-
-- front controller (instantiates main class)
-*/
+/**
+ * The main Application class.
+ */
 class Machine {
 	
+	/**
+	 * A collection of routes. Routes can be added using addRoute() method.
+	 */
 	private $routes;
+	
+	/**
+	 * A copy of the $_SERVER php array. This is set by the constructor.
+	 * Passing a custom array may be helpful for testing.
+	 */
 	private $SERVER;
+	
+	/**
+	 * Whether activate debug mode. Set by the constructor.
+	 */
 	private $debug;
+	
+	/**
+	 * A collection of instances of plugin classes. 
+	 * This is populated by the addPlugin() method.
+	 */
 	private $plugins;
 	
+	/**
+	 * Path constants.
+	 */
 	const TEMPLATE_PATH = "templates/";
 	const PLUGINS_PATH = "plugins/";
 	
@@ -56,10 +50,30 @@ class Machine {
 		$this->plugins = [];
 	}
 	
+	/**
+	 *	Add a route.
+	 *	Adding a route enables the Application to respond with a page.
+	 *	
+	 *	@param $name String The name of the route should be the complete slug.
+	 *	@param $opts Array like the following example:
+	 *		[
+	 *			"template" => "<template_name>.php",
+	 *			"data" => [
+	 *				"<key_1>" => "<value_1>",
+	 *				"<key_2>" => "<value_2>",
+	 *				...
+	 *				"<key_n>" => "<value_n>"
+	 *			]
+	 *		]
+	 */
 	public function addRoute($name, $opts) {
 		$this->routes[$name] = $opts;
 	}
 	
+	/**
+	 *	Run the application. Get template and data to be mixed together and
+	 *	produce the final HTML output.
+	 */
 	public function run() {
 		$template = $this->get_template();
 		$data = $this->get_data();
@@ -72,6 +86,18 @@ class Machine {
 		}
 	}
 	
+	/**
+	 *	Add a plugin by name.
+	 *
+	 *	A plugin is an external class which defines new methods mapped in the
+	 *	template tag e.g.
+	 *		{{Link|Get|<param_1>|<param_2|...|<param_n>}}
+	 *	Link > is the plugin class
+	 *	Get > is a public method defined in the plugin class
+	 *	optional parameters are passed in.
+	 *
+	 *	@param $name String The plugin class name.
+	 */
 	public function addPlugin($name) {
 		$plugin_path = self::PLUGINS_PATH . $name . ".php"; 
 		if (file_exists($plugin_path)) {
@@ -83,19 +109,33 @@ class Machine {
 		}
 	}
 	
+	/**
+	 *	Get the Application state.
+	 *	This is a collection of values exposed to plugins.
+	 */
 	public function getState() {
 		return [
 			"SERVER" => $this->SERVER,
 			"routes" => $this->routes			
 		];
 	}
-
+	
+	/**
+	 *	return the plugin instance.
+	 */
+	public function plugin($name) {
+		return $this->plugins[$name];
+	}
+	
 	private function print_debug_info() {
 		echo "<!--";
 		print_r($this->SERVER);
 		echo "-->";
 	}		
 	
+	/**
+	 *	Get a template, based on the current request uri and the routes added.
+	 */
 	private function get_template() {
 		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
 			return "404";
@@ -113,7 +153,10 @@ class Machine {
 		
 		return $output;
 	}
-	
+
+	/**
+	 *	Return the data associated to the route.
+	 */	
 	private function get_data() {
 		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
 			return [];
@@ -122,7 +165,7 @@ class Machine {
 		return $route["data"];
 	}
 	
-	private function populate_template($tpl, $data) {
+	public function populate_template($tpl, $data) {
 		// populate simple tag with data
 		foreach($data as $k => $v) {
 			$tpl = str_replace("{{".$k."}}", $v, $tpl);

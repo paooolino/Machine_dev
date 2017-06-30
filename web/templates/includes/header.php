@@ -10,6 +10,7 @@
 				<li><a href="{{Link|Get|/}}">Home</a></li>
 				<li><a href="{{Link|Get|/chi-siamo/}}">Chi siamo</a></li>
 				<li><a href="{{Link|Get|/registrati/}}">Registrati</a></li>
+				<li><a href="{{Link|Get|/login/}}">Login</a></li>
 			</ul>
 		</div>
 	</header>

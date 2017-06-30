@@ -6,6 +6,17 @@ $machine = new \Paooolino\Machine($_SERVER, true);
 $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 
+$machine->plugin("Form")->addForm("Register", [
+	"email",
+	"password",
+	"password2"
+]);
+
+$machine->plugin("Form")->addForm("Login", [
+	"email",
+	"password"
+]);
+
 $machine->addRoute("/", [
 	"template" => "home.php",
 	"data" => [
@@ -28,7 +39,16 @@ $machine->addRoute("/registrati/", [
 	"template" => "single.php",
 	"data" => [
 		"titolo" => "Registrazione",
-		"testo" => "{{Form|Get|Register}}",
+		"testo" => "{{Form|Render|Register}}",
+		"foto" => ""
+	]
+]);
+
+$machine->addRoute("/login/", [
+	"template" => "single.php",
+	"data" => [
+		"titolo" => "Accedi",
+		"testo" => "{{Form|Render|Login}}",
 		"foto" => ""
 	]
 ]);
