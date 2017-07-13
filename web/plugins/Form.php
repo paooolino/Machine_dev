@@ -17,9 +17,9 @@ class Form {
 	';
 	private $form_template = '
 		<div class="formContainer">
-			<form action="">
+			<form method="post" action="{{FORMACTION}}">
 				{{FORMROWS}}
-				<button type="submit"></button>
+				<button type="submit">submit</button>
 			</form>
 		</div>
 	';
@@ -28,21 +28,27 @@ class Form {
 		$this->machine = $machine;
 	}
 	
-	public function addForm($name, $fields) {
-		$this->forms[$name] = $fields;
+	public function addForm($name, $opts) {
+		$this->forms[$name] = $opts;
 	}
 	
 	public function Render($params) {
 		$formName = $params[0];
 		
 		$html_rows = "";
-		foreach ($this->forms[$formName] as $formField) {
+		foreach ($this->forms[$formName]["fields"] as $formField) {
 			$html_rows .= $this->machine->populate_template($this->formrow_template, [
 				"LABEL" => $this->getFormLabel($formField),
 				"FIELD" => $this->getFormField($formField)
 			]);
 		}
-		return $html_rows;
+		
+		$html = $this->machine->populate_template($this->form_template, [
+			"FORMACTION" => $this->forms[$formName]["action"],
+			"FORMROWS" => $html_rows
+		]);
+		
+		return $html;
 	}
 	
 	private function getFormLabel($formField) {

@@ -16,10 +16,16 @@ class Machine {
 	private $routes;
 	
 	/**
+	 * A collection of actions. Actions can be added using addAction() method.
+	 */
+	private $actions;
+	
+	/**
 	 * A copy of the $_SERVER php array. This is set by the constructor.
 	 * Passing a custom array may be helpful for testing.
 	 */
 	private $SERVER;
+	private $POST;
 	
 	/**
 	 * Whether activate debug mode. Set by the constructor.
@@ -44,8 +50,9 @@ class Machine {
 	 * @param $server Array The $_SERVER array
 	 * @param $debug bool	Whether debug mode is enabled
 	 */
-	 public function __construct($server, $debug = false) {
-		$this->SERVER = $server;
+	 public function __construct($state, $debug = false) {
+		$this->SERVER = $state[0];
+		$this->POST = $state[1];
 		$this->debug = $debug;
 		$this->plugins = [];
 	}
@@ -71,10 +78,29 @@ class Machine {
 	}
 	
 	/**
+	 *	Add an action.
+	 *	Adding an actions enables the Application to execute a callback function
+	 *	and produce side effects.
+	 *	
+	 *	@param $name String The name of the action should be the complete slug.
+	 *	@param $cb Function to be executed
+	 */
+	public function addAction($name, $cb) {
+		$this->actions[$name] = $cb;
+	}
+	
+	/**
 	 *	Run the application. Get template and data to be mixed together and
 	 *	produce the final HTML output.
 	 */
 	public function run() {
+		// check for an action...
+		if (isset($this->actions[$this->SERVER["REQUEST_URI"]])) {
+			$this->actions[$this->SERVER["REQUEST_URI"]]($this);
+			return;
+		}
+		
+		// if not found, check for a route...
 		$template = $this->get_template();
 		$data = $this->get_data();
 		$html = $this->populate_template($template, $data);
@@ -116,6 +142,7 @@ class Machine {
 	public function getState() {
 		return [
 			"SERVER" => $this->SERVER,
+			"POST" => $this->POST,
 			"routes" => $this->routes			
 		];
 	}

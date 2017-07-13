@@ -7,6 +7,7 @@
         }
     ],
     "require": {
+        "gabordemooij/redbean": "^4.3"
     },
     "autoload": {
         "psr-4": {
