@@ -73,7 +73,7 @@ class Machine {
 			die("Route exists form GET method (" . $name . ")" );
 		}
 		$this->routes[$name] = [
-			"GET" => $cb;
+			"GET" => $cb
 		];
 	}
 	
@@ -90,7 +90,7 @@ class Machine {
 			die("Route exists form GET method (" . $name . ")" );
 		}
 		$this->routes[$name] = [
-			$method => $cb;
+			$method => $cb
 		];
 	}
 	
@@ -99,18 +99,34 @@ class Machine {
 	 *	produce the final HTML output.
 	 */
 	public function run() {
-		// check for an action...
-		if (isset($this->actions[$this->SERVER["REQUEST_URI"]])) {
-			$this->actions[$this->SERVER["REQUEST_URI"]]($this);
-			return;
+		$output = "404";
+		
+		$path = $this->SERVER["REQUEST_URI"];
+		$method = $this->SERVER["REQUEST_METHOD"];
+		if (isset($this->routes[$path][$method])) {
+			$route_callback = $this->routes[$path][$method];
+			$result = $route_callback($this);
+			
+			// actions will not execute the following, because their callback always have to redirect.
+			if (isset($result["template"])) {
+				$data = isset($result["data"]) ? $result["data"] : [];
+				$template_file_name = self::TEMPLATE_PATH . $result["template"];
+				if (file_exists($template_file_name)) {
+					// data fields are available as regular php variables in templates
+					foreach ($data as $k => $v) {
+						$$k = $v;
+					}
+					ob_start();
+					require($template_file_name);
+					$template = ob_get_contents();
+					ob_end_clean();
+					
+					$output = $this->populate_template($template, $data);
+				}
+			}
 		}
 		
-		// if not found, check for a route...
-		$data = $this->get_data();
-		$template = $this->get_template($data);
-		$html = $this->populate_template($template, $data);
-		
-		echo $html;
+		echo $output;
 		
 		if ($this->debug) {
 			$this->print_debug_info();
@@ -175,45 +191,6 @@ class Machine {
 		print_r($this->SERVER);
 		echo "-->";
 	}		
-	
-	/**
-	 *	Get a template, based on the current request uri and the routes added.
-	 */
-	private function get_template($data) {
-		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
-			return "404";
-		}
-		$route_callback = $this->routes[$this->SERVER["REQUEST_URI"]];
-		$route = $route_callback($this);
-		$template_file_name = self::TEMPLATE_PATH . $route["template"];
-		if (!file_exists($template_file_name)) {
-			return "404";
-		}
-
-		// data fields are available as regular php variables in templates
-		foreach ($data as $k => $v) {
-			$$k = $v;
-		}
-		
-		ob_start();
-		require($template_file_name);
-		$output = ob_get_contents();
-		ob_end_clean();
-		
-		return $output;
-	}
-
-	/**
-	 *	Return the data associated to the route.
-	 */	
-	private function get_data() {
-		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
-			return [];
-		}
-		$route_callback = $this->routes[$this->SERVER["REQUEST_URI"]];
-		$route = $route_callback($this);
-		return $route["data"];
-	}
 	
 	public function populate_template($tpl, $data) {
 		// populate simple tag with data
