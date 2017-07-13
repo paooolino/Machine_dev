@@ -11,6 +11,7 @@
 				<li><a href="{{Link|Get|/chi-siamo/}}">Chi siamo</a></li>
 				<li><a href="{{Link|Get|/registrati/}}">Registrati</a></li>
 				<li><a href="{{Link|Get|/login/}}">Login</a></li>
+				<li><a href="{{Link|Get|/init/}}">Init database</a></li>
 			</ul>
 		</div>
 	</header>

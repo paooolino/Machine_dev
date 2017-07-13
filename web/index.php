@@ -20,7 +20,7 @@ $machine->plugin("Form")->addForm("Register", [
 	]
 ]);
 
-$machine->plugin("Form")->addForm("Login", "/login/", [
+$machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
 	"fields" => [
 		"email",
@@ -60,6 +60,8 @@ $machine->addAction("/register/", function($machine) {
 	$machine->plugin("Database")->addItem("user", [
 		"email" => $state["POST"]["email"]
 	]);
+	$path = $machine->plugin("Link")->Get("/");
+	$machine->redirect($path);
 });
 
 $machine->addRoute("/login/", [
@@ -70,5 +72,25 @@ $machine->addRoute("/login/", [
 		"foto" => ""
 	]
 ]);
+
+// action to init db
+
+$machine->addAction("/init/", function($machine) {
+	$machine->plugin("Database")->nuke();
+	$machine->plugin("Database")->addItem("league", [
+		"name" => "Serie A"
+	]);
+	$machine->plugin("Database")->addItem("league", [
+		"name" => "Serie B"
+	]);
+	$machine->plugin("Database")->addItem("league", [
+		"name" => "Lega Pro"
+	]);
+	$machine->plugin("Database")->addItem("league", [
+		"name" => "Campionato Nazionale Dilettanti"
+	]);
+	$path = $machine->plugin("Link")->Get("/");
+	$machine->redirect($path);
+});
 
 $machine->run();

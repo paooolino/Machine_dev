@@ -4,7 +4,7 @@ namespace Plugin;
 class Database {
 	
 	private $machine;
-
+	
 	function __construct($machine) {
 		$this->machine = $machine;
 		
@@ -19,12 +19,19 @@ class Database {
 	}
 	
 	public function addItem($collectionName, $data) {
-		var_dump($collectionName);
-		var_dump($data);
-		die("TO DO plugins/Database/addItem");
+		$item = \RedBeanPHP\R::dispense($collectionName);
+		foreach ($data as $k => $v) {
+			$item->{$k} = $v;
+		}
+		$id = \RedBeanPHP\R::store($item);
+		return $id;
 	}
 	
 	public function findAll($collectionName) {
 		return \RedBeanPHP\R::findAll($collectionName);
+	}
+	
+	public function nuke() {
+		\RedBeanPHP\R::nuke();
 	}
 }

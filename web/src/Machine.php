@@ -147,6 +147,11 @@ class Machine {
 		];
 	}
 	
+	public function redirect($path) {
+		header("location: " . $path);
+		die();
+	}
+	
 	/**
 	 *	return the plugin instance.
 	 */
