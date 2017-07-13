@@ -7,7 +7,9 @@ $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 $machine->addPlugin("Database");
 
-$machine->plugin("Database")->setUp("localhost", "root", "root", "machinedb");
+$machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
+
+// define forms
 
 $machine->plugin("Form")->addForm("Register", [
 	"action" => "/register/",
@@ -26,12 +28,12 @@ $machine->plugin("Form")->addForm("Login", "/login/", [
 	]
 ]);
 
+// define routes and actions
+
 $machine->addRoute("/", [
-	"template" => "page.php",
+	"template" => "home.php",
 	"data" => [
-		"titolo" => "Home page",
-		"testo" => "Questa è la homepage del sito.",
-		"foto" => ""
+		"leagues" => $machine->plugin("Database")->findAll("league")
 	]
 ]);
 

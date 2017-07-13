@@ -101,8 +101,8 @@ class Machine {
 		}
 		
 		// if not found, check for a route...
-		$template = $this->get_template();
 		$data = $this->get_data();
+		$template = $this->get_template($data);
 		$html = $this->populate_template($template, $data);
 		
 		echo $html;
@@ -163,7 +163,7 @@ class Machine {
 	/**
 	 *	Get a template, based on the current request uri and the routes added.
 	 */
-	private function get_template() {
+	private function get_template($data) {
 		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
 			return "404";
 		}
@@ -171,6 +171,11 @@ class Machine {
 		$template_file_name = self::TEMPLATE_PATH . $route["template"];
 		if (!file_exists($template_file_name)) {
 			return "404";
+		}
+
+		// data fields are available as regular php variables in templates
+		foreach ($data as $k => $v) {
+			$$k = $v;
 		}
 		
 		ob_start();
@@ -195,7 +200,10 @@ class Machine {
 	public function populate_template($tpl, $data) {
 		// populate simple tag with data
 		foreach($data as $k => $v) {
-			$tpl = str_replace("{{".$k."}}", $v, $tpl);
+			// if a string, try the tag substitution
+			if (gettype($v) == "string") {
+				$tpl = str_replace("{{".$k."}}", $v, $tpl);
+			}
 		}
 
 		// find plugin tags

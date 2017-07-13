@@ -23,4 +23,8 @@ class Database {
 		var_dump($data);
 		die("TO DO plugins/Database/addItem");
 	}
+	
+	public function findAll($collectionName) {
+		return \RedBeanPHP\R::findAll($collectionName);
+	}
 }
