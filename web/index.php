@@ -28,34 +28,40 @@ $machine->plugin("Form")->addForm("Login", [
 	]
 ]);
 
-// define routes and actions
+// define pages and actions
 
-$machine->addRoute("/", [
-	"template" => "home.php",
-	"data" => [
-		"leagues" => $machine->plugin("Database")->findAll("league")
-	]
-]);
+$machine->addPage("/", function($machine) {
+	return [
+		"template" => "home.php",
+		"data" => [
+			"leagues" => $machine->plugin("Database")->findAll("league")
+		]
+	];
+});
 
-$machine->addRoute("/chi-siamo/", [
-	"template" => "page.php",
-	"data" => [
-		"titolo" => "Chi siamo",
-		"testo" => "Abbiamo facce che non conosciamo.",
-		"foto" => ""
-	]
-]);
+$machine->addPage("/chi-siamo/", function() {
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => "Chi siamo",
+			"testo" => "Abbiamo facce che non conosciamo.",
+			"foto" => ""
+		]
+	];
+});
 	
-$machine->addRoute("/registrati/", [
-	"template" => "page.php",
-	"data" => [
-		"titolo" => "Registrazione",
-		"testo" => "{{Form|Render|Register}}",
-		"foto" => ""
-	]
-]);
+$machine->addPage("/registrati/", function() {
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => "Registrazione",
+			"testo" => "{{Form|Render|Register}}",
+			"foto" => ""
+		]
+	];
+});
 
-$machine->addAction("/register/", function($machine) {
+$machine->addAction("/register/", "POST", function($machine) {
 	$state = $machine->getState();
 	$machine->plugin("Database")->addItem("user", [
 		"email" => $state["POST"]["email"]
@@ -64,30 +70,39 @@ $machine->addAction("/register/", function($machine) {
 	$machine->redirect($path);
 });
 
-$machine->addRoute("/login/", [
-	"template" => "page.php",
-	"data" => [
-		"titolo" => "Accedi",
-		"testo" => "{{Form|Render|Login}}",
-		"foto" => ""
-	]
-]);
+$machine->addPage("/login/", function() {
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => "Accedi",
+			"testo" => "{{Form|Render|Login}}",
+			"foto" => ""
+		]
+	];
+});
 
+$machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug){
+	return $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
+});
 // action to init db
 
-$machine->addAction("/init/", function($machine) {
+$machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
 	$machine->plugin("Database")->addItem("league", [
-		"name" => "Serie A"
+		"name" => "Serie A",
+		"slug" => $machine->urlify("Serie A")
 	]);
 	$machine->plugin("Database")->addItem("league", [
-		"name" => "Serie B"
+		"name" => "Serie B",
+		"slug" => $machine->urlify("Serie B")
 	]);
 	$machine->plugin("Database")->addItem("league", [
-		"name" => "Lega Pro"
+		"name" => "Lega Pro",
+		"slug" => $machine->urlify("Lega Pro")
 	]);
 	$machine->plugin("Database")->addItem("league", [
-		"name" => "Campionato Nazionale Dilettanti"
+		"name" => "Campionato Nazionale Dilettanti",
+		"slug" => $machine->urlify("Campionato Nazionale Dilettanti")
 	]);
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

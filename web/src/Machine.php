@@ -11,14 +11,9 @@ namespace Paooolino;
 class Machine {
 	
 	/**
-	 * A collection of routes. Routes can be added using addRoute() method.
+	 * A collection of routes. Routes can be added using addRoute() or addAction() methods.
 	 */
 	private $routes;
-	
-	/**
-	 * A collection of actions. Actions can be added using addAction() method.
-	 */
-	private $actions;
 	
 	/**
 	 * A copy of the $_SERVER php array. This is set by the constructor.
@@ -73,8 +68,13 @@ class Machine {
 	 *			]
 	 *		]
 	 */
-	public function addRoute($name, $opts) {
-		$this->routes[$name] = $opts;
+	public function addPage($name, $cb) {
+		if (isset($this->routes[$name]["GET"])) {
+			die("Route exists form GET method (" . $name . ")" );
+		}
+		$this->routes[$name] = [
+			"GET" => $cb;
+		];
 	}
 	
 	/**
@@ -85,8 +85,13 @@ class Machine {
 	 *	@param $name String The name of the action should be the complete slug.
 	 *	@param $cb Function to be executed
 	 */
-	public function addAction($name, $cb) {
-		$this->actions[$name] = $cb;
+	public function addAction($name, $method, $cb) {
+		if (isset($this->routes[$name][$method])) {
+			die("Route exists form GET method (" . $name . ")" );
+		}
+		$this->routes[$name] = [
+			$method => $cb;
+		];
 	}
 	
 	/**
@@ -152,6 +157,12 @@ class Machine {
 		die();
 	}
 	
+	public function urlify($s) {
+		$s = strtolower($s);
+		$s = str_replace(" ", "-", $s);
+		return $s;
+	}
+	
 	/**
 	 *	return the plugin instance.
 	 */
@@ -172,7 +183,8 @@ class Machine {
 		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
 			return "404";
 		}
-		$route = $this->routes[$this->SERVER["REQUEST_URI"]];
+		$route_callback = $this->routes[$this->SERVER["REQUEST_URI"]];
+		$route = $route_callback($this);
 		$template_file_name = self::TEMPLATE_PATH . $route["template"];
 		if (!file_exists($template_file_name)) {
 			return "404";
@@ -198,7 +210,8 @@ class Machine {
 		if (!isset($this->routes[$this->SERVER["REQUEST_URI"]])) {
 			return [];
 		}
-		$route = $this->routes[$this->SERVER["REQUEST_URI"]];
+		$route_callback = $this->routes[$this->SERVER["REQUEST_URI"]];
+		$route = $route_callback($this);
 		return $route["data"];
 	}
 	
