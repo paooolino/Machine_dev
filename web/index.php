@@ -63,11 +63,48 @@ $machine->addPage("/registrati/", function() {
 
 $machine->addAction("/register/", "POST", function($machine) {
 	$state = $machine->getState();
+	
+	// filter input
+	$email = filter_var(trim($state["POST"]["email"]), FILTER_VALIDATE_EMAIL);
+	$password = filter_var(trim($state["POST"]["password"]), FILTER_VALIDATE_REGEXP, [
+		"options"=> [
+			"regexp" => "/.{6,}/"
+		]
+	]);
+	$password2 = trim($state["POST"]["password2"]);
+	
+	// look for errors
+	$errors = [];
+	if ($email == "") {
+		$errors[] = "EMAIL_ERROR";
+	}
+	if ($password == "") {
+		$errors[] = "PASSWORD_ERROR";
+	}
+	if ($password !== $password2) {
+		$errors[] = "PASSWORD_MATCHING_ERROR";
+	}
+	
+	// redirect if error
+	if (count($errors) > 0) {
+		$machine->redirect("/error/" . implode(",", $errors) . "/");
+	}
+	
 	$machine->plugin("Database")->addItem("user", [
 		"email" => $state["POST"]["email"]
 	]);
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
+});
+
+$machine->addPage("/error/{errorslist}/", function($machine, $errorslist) {
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => "Errore",
+			"testo" => "Si è verificato un errore."
+		]
+	];
 });
 
 $machine->addPage("/login/", function() {

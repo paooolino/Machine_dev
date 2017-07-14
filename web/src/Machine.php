@@ -103,9 +103,9 @@ class Machine {
 		
 		$path = $this->SERVER["REQUEST_URI"];
 		$method = $this->SERVER["REQUEST_METHOD"];
-		if (isset($this->routes[$path][$method])) {
-			$route_callback = $this->routes[$path][$method];
-			$result = $route_callback($this);
+		$route_matchinfo = $this->match_route($path, $method);
+		if ($route_matchinfo) {
+			$result = call_user_func_array($route_matchinfo["callback"], $route_matchinfo["params"]);
 			
 			// actions will not execute the following, because their callback always have to redirect.
 			if (isset($result["template"])) {
@@ -131,6 +131,33 @@ class Machine {
 		if ($this->debug) {
 			$this->print_debug_info();
 		}
+	}
+	
+	private function match_route($path, $method) {
+		// $path is for example 
+		//	/route/variable/
+		
+		// $route 
+		foreach ($this->routes as $routename => $routearr) {
+			// $routename is for example
+			//	/route/{parameter}/
+			$routename_exp = preg_replace("/\{(.*?)\}/", "(.*?)", $routename);
+			$routename_exp = str_replace("/", "\/", $routename_exp);
+			$regexp = "/^" . $routename_exp . "$/";
+			
+			$matches = [];
+			$n_matches = preg_match_all($regexp, $path, $matches);
+			if ($n_matches > 0) {
+				if (isset($this->routes[$routename][$method])) {
+					return [
+						"callback" => $this->routes[$routename][$method],
+						"params" => array_merge([$this], isset($matches[1]) ? $matches[1] : [])
+					];
+				}
+			}
+		}
+		
+		die();
 	}
 	
 	/**
