@@ -6,6 +6,7 @@ $machine = new \Paooolino\Machine([$_SERVER, $_POST], true);
 $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 $machine->addPlugin("Database");
+$machine->addPlugin("Error");
 
 $machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
 
@@ -19,6 +20,10 @@ $machine->plugin("Form")->addForm("Register", [
 		"password2"
 	]
 ]);
+
+$machine->plugin("Error")->addError("EMAIL_REGISTER", "Errore mail");
+$machine->plugin("Error")->addError("PASSWORD_REGISTER", "Errore password");
+$machine->plugin("Error")->addError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
 
 $machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
@@ -67,44 +72,31 @@ $machine->addAction("/register/", "POST", function($machine) {
 	// filter input
 	$email = filter_var(trim($state["POST"]["email"]), FILTER_VALIDATE_EMAIL);
 	$password = filter_var(trim($state["POST"]["password"]), FILTER_VALIDATE_REGEXP, [
-		"options"=> [
+		"options" => [
 			"regexp" => "/.{6,}/"
 		]
 	]);
 	$password2 = trim($state["POST"]["password2"]);
 	
 	// look for errors
-	$errors = [];
 	if ($email == "") {
-		$errors[] = "EMAIL_ERROR";
+		$machine->plugin("Error")->raiseError("EMAIL_REGISTER");
 	}
 	if ($password == "") {
-		$errors[] = "PASSWORD_ERROR";
+		$machine->plugin("Error")->raiseError("PASSWORD_REGISTER");
 	}
 	if ($password !== $password2) {
-		$errors[] = "PASSWORD_MATCHING_ERROR";
+		$machine->plugin("Error")->raiseError("PASSWORD_REGISTER_CONFIRM");
 	}
 	
 	// redirect if error
-	if (count($errors) > 0) {
-		$machine->redirect("/error/" . implode(",", $errors) . "/");
-	}
+	$machine->plugin("Error")->showError();
 	
 	$machine->plugin("Database")->addItem("user", [
 		"email" => $state["POST"]["email"]
 	]);
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
-});
-
-$machine->addPage("/error/{errorslist}/", function($machine, $errorslist) {
-	return [
-		"template" => "page.php",
-		"data" => [
-			"titolo" => "Errore",
-			"testo" => "Si è verificato un errore."
-		]
-	];
 });
 
 $machine->addPage("/login/", function() {
