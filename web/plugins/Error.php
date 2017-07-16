@@ -13,12 +13,16 @@ class Error {
 	private $errors;
 	private $raisedErrors;
 	
+	const ENCRYPT_METHOD = "AES-128-ECB";
+	const ENCRYPT_KEY = 'If$;KVkTDu+ 29)UQy<Tzh[5$aTw41xaT$*i]g?1SJ30`}Ieat97|z5SU+d/3g=5';
+	
 	function __construct($machine) {
 		$this->machine = $machine;
 		$this->errors = [];
 		$this->raisedErrors = [];
 		
-		$this->machine->addPage("/error/{errorslist}/", function($machine, $errorcodes) {
+		$this->machine->addPage("/error/{errorslist}/", function($machine, $enc_codes) {
+			$errorcodes = openssl_decrypt($enc_codes, self::ENCRYPT_METHOD, self::ENCRYPT_KEY);
 			$errorcodes_arr = explode(",", $errorcodes);
 			$errorMessages = [];
 			foreach ($errorcodes_arr as $errorcode) {
@@ -69,6 +73,7 @@ class Error {
 		if (count($this->raisedErrors) == 0) {
 			return;
 		}
-		$this->machine->redirect("/error/" . $this->getRaisedErrorCodesList(",") . "/");
+		$enc_codes = openssl_encrypt($this->getRaisedErrorCodesList(","), self::ENCRYPT_METHOD, self::ENCRYPT_KEY);
+		$this->machine->redirect("/error/" . $enc_codes . "/");
 	}
 }
