@@ -139,9 +139,17 @@ $machine->addPage("/login/", function() {
 	];
 });
 
-$machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug){
-	return $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
+$machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
+	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => $league->name,
+			"testo" => "League infos."
+		]
+	];
 });
+
 // action to init db
 
 $machine->addAction("/init/", "GET", function($machine) {
