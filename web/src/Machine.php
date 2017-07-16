@@ -94,6 +94,13 @@ class Machine {
 		];
 	}
 	
+	// used by plugins
+	public function executeHook($arrFunc, $arguments) {
+		foreach ($arrFunc as $func) {
+			call_user_func_array($func, $arguments);
+		}
+	}
+	
 	/**
 	 *	Run the application. Get template and data to be mixed together and
 	 *	produce the final HTML output.
@@ -110,19 +117,7 @@ class Machine {
 			// actions will not execute the following, because their callback always have to redirect.
 			if (isset($result["template"])) {
 				$data = isset($result["data"]) ? $result["data"] : [];
-				$template_file_name = self::TEMPLATE_PATH . $result["template"];
-				if (file_exists($template_file_name)) {
-					// data fields are available as regular php variables in templates
-					foreach ($data as $k => $v) {
-						$$k = $v;
-					}
-					ob_start();
-					require($template_file_name);
-					$template = ob_get_contents();
-					ob_end_clean();
-					
-					$output = $this->populate_template($template, $data);
-				}
+				$output = $this->get_output_template($result["template"], $data);
 			}
 		}
 		
@@ -131,6 +126,25 @@ class Machine {
 		if ($this->debug) {
 			$this->print_debug_info();
 		}
+	}
+	
+	public function get_output_template($template, $data) {
+		$output = "";
+		
+		$template_file_name = self::TEMPLATE_PATH . $template;
+		if (file_exists($template_file_name)) {
+			// data fields are available as regular php variables in templates
+			foreach ($data as $k => $v) {
+				$$k = $v;
+			}
+			ob_start();
+			require($template_file_name);
+			$template = ob_get_contents();
+			ob_end_clean();
+			
+			$output = $this->populate_template($template, $data);
+		}
+		return $output;
 	}
 	
 	private function match_route($path, $method) {

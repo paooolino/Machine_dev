@@ -10,6 +10,9 @@ class Link {
 	}
 	
 	public function Get($params) {
+		if (gettype($params) == "string") {
+			$params = [$params];
+		}
 		$slug = $params[0];
 		$state = $this->machine->getState();
 		return

@@ -1,14 +1,26 @@
 <?php
 require("../vendor/autoload.php");
 
+use Ramsey\Uuid\Uuid;
+
 $machine = new \Paooolino\Machine([$_SERVER, $_POST], true);
 
 $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 $machine->addPlugin("Database");
 $machine->addPlugin("Error");
+$machine->addPlugin("Email");
 
 $machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
+$machine->plugin("Email")->addHook("after_mail_send", function($machine, $date, $to, $subject, $html, $result) {
+	$machine->plugin("Database")->addItem("logmail", [
+		"date" => $date,
+		"to" => $to,
+		"subject" => $subject,
+		"html" => $html,
+		"result" => $result
+	]);
+});
 
 // define forms
 
@@ -85,16 +97,33 @@ $machine->addAction("/register/", "POST", function($machine) {
 	if ($password == "") {
 		$machine->plugin("Error")->raiseError("PASSWORD_REGISTER");
 	}
-	if ($password !== $password2) {
+	if ($password != "" && $password !== $password2) {
 		$machine->plugin("Error")->raiseError("PASSWORD_REGISTER_CONFIRM");
 	}
 	
 	// redirect if error
 	$machine->plugin("Error")->showError();
 	
+	// save in db
+	$activid = md5(Uuid::uuid4());
 	$machine->plugin("Database")->addItem("user", [
-		"email" => $state["POST"]["email"]
+		"email" => $email,
+		"password" => password_hash($password, PASSWORD_BCRYPT),
+		"activid" => $activid,
+		"active" => false
 	]);
+	
+	// send mail
+	$machine->plugin("Email")->send([
+		"to" => $email,
+		"subject" => "La tua registrazione a sportGame",
+		"template" => "email/register.php",
+		"data" => [
+			"activlink" => $machine->plugin("Link")->Get("/activate/" . $activid . "/")
+		]
+	]);
+	
+	// success redirect
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
 });

@@ -7,7 +7,8 @@
         }
     ],
     "require": {
-        "gabordemooij/redbean": "^4.3"
+        "gabordemooij/redbean": "^4.3",
+        "ramsey/uuid": "^3.6"
     },
     "autoload": {
         "psr-4": {
