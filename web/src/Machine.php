@@ -34,6 +34,11 @@ class Machine {
 	private $plugins;
 	
 	/**
+	 *	Cocur\Slugify library
+	 */
+	private $slugify;
+	
+	/**
 	 * Path constants.
 	 */
 	const TEMPLATE_PATH = "templates/";
@@ -46,10 +51,21 @@ class Machine {
 	 * @param $debug bool	Whether debug mode is enabled
 	 */
 	 public function __construct($state, $debug = false) {
+		 
+		// dependency check
+		if (!class_exists("\Cocur\Slugify\Slugify")) {
+			die("Error: \Cocur\Slugify\Slugify class not defined. Please run<br><pre>composer require cocur/slugify</pre><br>to add it to your project.");
+		}
+		
 		$this->SERVER = $state[0];
 		$this->POST = $state[1];
 		$this->debug = $debug;
 		$this->plugins = [];
+		$this->slugify = new \Cocur\Slugify\Slugify();
+	}
+	
+	public function slugify($s) {
+		return $this->slugify->slugify($s);
 	}
 	
 	/**

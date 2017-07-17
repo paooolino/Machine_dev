@@ -35,6 +35,10 @@ class Database {
 		return \RedBeanPHP\R::findOne($table, " $field = ? ", [$value]);
 	}
 	
+	public function update($bean) {
+		\RedBeanPHP\R::store($bean);
+	}
+	
 	public function nuke() {
 		\RedBeanPHP\R::nuke();
 	}

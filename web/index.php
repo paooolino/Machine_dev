@@ -2,9 +2,6 @@
 require("../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
-use Cocur\Slugify\Slugify;
-
-$slugify = new Slugify();
 
 $machine = new \Paooolino\Machine([$_SERVER, $_POST], true);
 
@@ -39,6 +36,8 @@ $machine->plugin("Form")->addForm("Register", [
 $machine->plugin("Error")->addError("EMAIL_REGISTER", "Errore mail");
 $machine->plugin("Error")->addError("PASSWORD_REGISTER", "Errore password");
 $machine->plugin("Error")->addError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
+$machine->plugin("Error")->addError("USER_NOT_PRESENT", "L'utente cercato non esiste.");
+$machine->plugin("Error")->addError("USER_YET_ACTIVE", "L'utente è già attivo.");
 
 $machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
@@ -131,6 +130,39 @@ $machine->addAction("/register/", "POST", function($machine) {
 	$machine->redirect($path);
 });
 
+$machine->addAction("/activate/{activid}/", "GET", function($machine, $activid) {
+	$user = $machine->plugin("Database")->getItemByField("user", "activid", $activid);
+	
+	// look for errors
+	if (!$user) {
+		$machine->plugin("Error")->raiseError("USER_NOT_PRESENT");
+	}
+	if ($user->active) {
+		$machine->plugin("Error")->raiseError("USER_YET_ACTIVE");
+	}
+	
+	// redirect if error
+	$machine->plugin("Error")->showError();
+	
+	// save in db
+	$user->active = true;	
+	$machine->plugin("Database")->update($user);
+	
+	// success redirect
+	$path = $machine->plugin("Link")->Get("/activation-completed/");
+	$machine->redirect($path);
+});
+
+$machine->addPage("/activation-completed/", function() {
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => "Attivazione completata",
+			"testo" => "Complimenti! L'attivazione è stata completata.",
+		]
+	];
+});
+
 $machine->addPage("/login/", function() {
 	return [
 		"template" => "page.php",
@@ -159,19 +191,19 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Serie A",
-		"slug" => $slugify->slugify('Serie A')
+		"slug" => $machine->slugify('Serie A')
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Serie B",
-		"slug" => $slugify->slugify("Serie B")
+		"slug" => $machine->slugify("Serie B")
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Lega Pro",
-		"slug" => $slugify->slugify("Lega Pro")
+		"slug" => $machine->slugify("Lega Pro")
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Campionato Nazionale Dilettanti",
-		"slug" => $slugify->slugify("Campionato Nazionale Dilettanti")
+		"slug" => $machine->slugify("Campionato Nazionale Dilettanti")
 	]);
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
