@@ -20,6 +20,10 @@ $machine->plugin("Email")->addHook("after_mail_send", function($machine, $date, 
 		"result" => $result
 	]);
 });
+$machine->plugin("Auth")->setDataCallback(function($machine, $user_id) {
+	return $machine->plugin("Database")->getItem("user", $user_id);
+});
+$machine->plugin("Auth")->checkLogin();
 
 // define forms
 

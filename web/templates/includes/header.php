@@ -4,7 +4,13 @@
 </head>
 <body>
 	<header>
-		<div class="loginbar"><?php echo($this->plugin("Auth")->checkLogin()); ?></div>
+		<div class="loginbar">
+			<?php if ($Auth->logged_user_id > 0) { ?>
+				Hello, <?php echo $Auth->data->email; ?>
+			<?php } else { ?>
+				You are not logged in.
+			<?php } ?>
+		</div>
 		<div class="logo">Site name</div>
 		<div class="menu">
 			<ul>

@@ -4,11 +4,19 @@ namespace Plugin;
 class Auth {
 	
 	private $machine;
+	private $data_callback;
+	
+	public $logged_user_id;
+	public $data;
 	
 	const AUTH_COOKIE_NAME = "KfjqrRAVhuJlzvX5ANWz";
 	
 	function __construct($machine) {
 		$this->machine = $machine;
+	}
+	
+	public function setDataCallback($func) {
+		$this->data_callback = $func; 
 	}
 	
 	public function generateAuthCookies($user_id) {
@@ -30,6 +38,8 @@ class Auth {
 	}
 	
 	public function checkLogin() {
+		$this->logged_user_id = 0;
+		
 		// retrieve cookie value
 		$state = $this->machine->getState();
 		if (isset($state["COOKIE"][self::AUTH_COOKIE_NAME])) {
@@ -40,11 +50,13 @@ class Auth {
 				// additional check based on ip
 				if ($session->ip == $state["SERVER"]["REMOTE_ADDR"]) {
 					// return the user id
-					return $session->user_id;
+					$this->logged_user_id = $session->user_id;
+					// execute data_callback
+					if ($this->data_callback) {
+						$this->data = call_user_func_array($this->data_callback, [$this->machine, $this->logged_user_id]);
+					}
 				}
 			}
 		}
-			
-		return 0;
 	}
 }

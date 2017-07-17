@@ -170,6 +170,14 @@ class Machine {
 		
 		$template_file_name = self::TEMPLATE_PATH . $template;
 		if (file_exists($template_file_name)) {
+			// plugins are available under their name
+			//	this lets to write in templates
+			//		$Auth->logged_user_id
+			//	instead of
+			//		$this->plugin("Auth")->logged_user_id
+			foreach ($this->plugins as $name => $instance) {
+				$$name = $instance;
+			}
 			// data fields are available as regular php variables in templates
 			foreach ($data as $k => $v) {
 				$$k = $v;

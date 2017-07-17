@@ -31,6 +31,10 @@ class Database {
 		return \RedBeanPHP\R::findAll($collectionName);
 	}
 	
+	public function getItem($table, $id) {
+		return \RedBeanPHP\R::findOne($table, $id);
+	}
+	
 	public function getItemByField($table, $field, $value) {
 		return \RedBeanPHP\R::findOne($table, " $field = ? ", [$value]);
 	}
