@@ -214,12 +214,6 @@ class Machine {
 		die();
 	}
 	
-	public function urlify($s) {
-		$s = strtolower($s);
-		$s = str_replace(" ", "-", $s);
-		return $s;
-	}
-	
 	/**
 	 *	return the plugin instance.
 	 */

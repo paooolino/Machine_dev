@@ -2,6 +2,9 @@
 require("../vendor/autoload.php");
 
 use Ramsey\Uuid\Uuid;
+use Cocur\Slugify\Slugify;
+
+$slugify = new Slugify();
 
 $machine = new \Paooolino\Machine([$_SERVER, $_POST], true);
 
@@ -156,19 +159,19 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Serie A",
-		"slug" => $machine->urlify("Serie A")
+		"slug" => $slugify->slugify('Serie A')
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Serie B",
-		"slug" => $machine->urlify("Serie B")
+		"slug" => $slugify->slugify("Serie B")
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Lega Pro",
-		"slug" => $machine->urlify("Lega Pro")
+		"slug" => $slugify->slugify("Lega Pro")
 	]);
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Campionato Nazionale Dilettanti",
-		"slug" => $machine->urlify("Campionato Nazionale Dilettanti")
+		"slug" => $slugify->slugify("Campionato Nazionale Dilettanti")
 	]);
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

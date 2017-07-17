@@ -10,7 +10,7 @@
 			<img src="<?php echo ""; ?>" />
 		</div>
 		<div class="label">
-			<a href="{{Link|Get|/league/<?php echo $this->urlify($league->name); ?>/}}"><?php echo $league->name; ?></a>
+			<a href="{{Link|Get|/league/<?php echo $league->slug; ?>/}}"><?php echo $league->name; ?></a>
 		</div>
 	</div>
 <?php } ?>
