@@ -7,6 +7,7 @@
  */
 namespace Plugin;
 
+// todo: better error management (error add queue, error raise)
 class Error {
 	
 	private $machine;

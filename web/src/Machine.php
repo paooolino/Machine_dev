@@ -86,7 +86,7 @@ class Machine {
 	 */
 	public function addPage($name, $cb) {
 		if (isset($this->routes[$name]["GET"])) {
-			die("Route exists form GET method (" . $name . ")" );
+			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
 		}
 		$this->routes[$name] = [
 			"GET" => $cb
@@ -103,7 +103,7 @@ class Machine {
 	 */
 	public function addAction($name, $method, $cb) {
 		if (isset($this->routes[$name][$method])) {
-			die("Route exists form GET method (" . $name . ")" );
+			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
 		}
 		$this->routes[$name] = [
 			$method => $cb

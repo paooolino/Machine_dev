@@ -52,14 +52,27 @@ class Form {
 	}
 	
 	private function getFormLabel($formField) {
-		if (gettype($formField) == "string") {
+		$type = gettype($formField);
+		if ($type == "string") {
 			return $formField;
 		}
+		if ($type == "array") {
+			return $formField[0];
+		}		
 	}
 	
 	private function getFormField($formField) {
-		if (gettype($formField) == "string") {
+		$type = gettype($formField);
+		if ($type  == "string") {
 			return '<input type="text" name="' . $formField . '" />';
+		}
+		if ($type == "array") {
+			$field_type = $formField[1];
+			switch ($field_type) {
+				case "password":
+					return '<input type="password" name="' . $formField[0] . '" />';
+					break;
+			}
 		}
 	}
 }

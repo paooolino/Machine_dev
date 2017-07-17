@@ -28,8 +28,8 @@ $machine->plugin("Form")->addForm("Register", [
 	"action" => "/register/",
 	"fields" => [
 		"email",
-		"password",
-		"password2"
+		["password", "password"],
+		["password2", "password"]
 	]
 ]);
 
@@ -38,12 +38,13 @@ $machine->plugin("Error")->addError("PASSWORD_REGISTER", "Errore password");
 $machine->plugin("Error")->addError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
 $machine->plugin("Error")->addError("USER_NOT_PRESENT", "L'utente cercato non esiste.");
 $machine->plugin("Error")->addError("USER_YET_ACTIVE", "L'utente è già attivo.");
+$machine->plugin("Error")->addError("LOGIN_FAILED", "Impossibile completare l'operazione: le credenziali inserite non sono corrette.");
 
 $machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
 	"fields" => [
 		"email",
-		"password"
+		["password", "password"]
 	]
 ]);
 
@@ -137,11 +138,11 @@ $machine->addAction("/activate/{activid}/", "GET", function($machine, $activid) 
 	if (!$user) {
 		$machine->plugin("Error")->raiseError("USER_NOT_PRESENT");
 	}
+	$machine->plugin("Error")->showError();
+	
 	if ($user->active) {
 		$machine->plugin("Error")->raiseError("USER_YET_ACTIVE");
 	}
-	
-	// redirect if error
 	$machine->plugin("Error")->showError();
 	
 	// save in db
@@ -172,6 +173,47 @@ $machine->addPage("/login/", function() {
 			"foto" => ""
 		]
 	];
+});
+
+$machine->addAction("/login/", "POST", function() {
+	$state = $machine->getState();
+	
+	// filter input
+	$email = filter_var(trim($state["POST"]["email"]), FILTER_VALIDATE_EMAIL);
+	$password = filter_var(trim($state["POST"]["password"]), FILTER_VALIDATE_REGEXP, [
+		"options" => [
+			"regexp" => "/.{6,}/"
+		]
+	]);
+	
+	// look for errors
+	if ($email == "") {
+		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
+	}
+	$machine->plugin("Error")->showError();
+	
+	if ($password == "") {
+		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
+	}
+	$machine->plugin("Error")->showError();
+	
+	// redirect if error
+	$machine->plugin("Error")->showError();
+	
+	// get user
+	$user = $machine->plugin("Database")->getItemByField("user", "email", $email);
+	if (!$user) {
+		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
+	} else {
+		if (!password_verify($password, $user->password) {
+			$machine->plugin("Error")->raiseError("LOGIN_FAILED");
+		}
+	}
+	$machine->plugin("Error")->showError();
+
+	// success redirect
+	$path = $machine->plugin("Link")->Get("/");
+	$machine->redirect($path);	
 });
 
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
