@@ -7,7 +7,6 @@
  */
 namespace Plugin;
 
-// todo: better error management (error add queue, error raise)
 class Error {
 	
 	private $machine;
@@ -44,7 +43,7 @@ class Error {
 	 *	@param $code String An all-caps no-spaces error code
 	 *	@param $message String A textual message to be shown to the user
 	 */
-	public function addError($code, $message) {
+	public function registerError($code, $message) {
 		$this->errors[$code] = $message;
 	}
 
@@ -53,7 +52,7 @@ class Error {
 	 *
 	 *	@param $code String The error code to raise
 	 */
-	public function raiseError($code) {
+	public function addError($code) {
 		// to do... check if code exists in repository $this->errors
 		$this->raisedErrors[$code] = $this->errors[$code];
 	}
@@ -70,11 +69,17 @@ class Error {
 	/**
 	 *	Redirect to the error page, if any error has been raised
 	 */
-	public function showError() {
+	public function raise() {
 		if (count($this->raisedErrors) == 0) {
 			return;
 		}
 		$enc_codes = openssl_encrypt($this->getRaisedErrorCodesList(","), self::ENCRYPT_METHOD, self::ENCRYPT_KEY);
 		$this->machine->redirect("/error/" . $enc_codes . "/");
+	}
+	
+	// regiter & raise error immediatly
+	public function raiseError($code, $message) {
+		$this->registerError($code, $message);
+		$this->raise();
 	}
 }
