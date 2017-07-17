@@ -37,7 +37,7 @@ $machine->plugin("Error")->registerError("PASSWORD_REGISTER", "Errore password")
 $machine->plugin("Error")->registerError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
 $machine->plugin("Error")->registerError("USER_NOT_PRESENT", "L'utente cercato non esiste.");
 $machine->plugin("Error")->registerError("USER_YET_ACTIVE", "L'utente è già attivo.");
-$machine->plugin("Error")->registerError("LOGIN_FAILED", "Impossibile completare l'operazione: le credenziali inserite non sono corrette.");
+$machine->plugin("Error")->registerError("LOGIN_FAILED", "Impossibile completare l'operazione: le credenziali inserite non sono corrette, oppure l'utente non è attivo.");
 
 $machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
@@ -194,10 +194,14 @@ $machine->addAction("/login/", "POST", function($machine) {
 	$user = $machine->plugin("Database")->getItemByField("user", "email", $email);
 	if (!$user) {
 		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
-	} else {
-		if (!password_verify($password, $user->password)) {
-			$machine->plugin("Error")->raiseError("LOGIN_FAILED");
-		}
+	}
+	
+	if (!$user->active) {
+		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
+	}
+	
+	if (!password_verify($password, $user->password)) {
+		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
 	}
 	
 	// set cookies

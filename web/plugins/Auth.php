@@ -36,7 +36,9 @@ class Auth {
 			$sessioncode = $state["COOKIE"][self::AUTH_COOKIE_NAME];
 			$session = $this->machine->plugin("Database")->getItemByField("loginsession", "sessioncode", $sessioncode);
 			if ($session) {
-				return $session->user_id;
+				if ($session->ip == $state["SERVER"]["REMOTE_ADDR"]) {
+					return $session->user_id;
+				}
 			}
 		}
 			
