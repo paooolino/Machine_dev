@@ -171,7 +171,7 @@ $machine->addPage("/login/", function() {
 	];
 });
 
-$machine->addAction("/login/", "POST", function() {
+$machine->addAction("/login/", "POST", function($machine) {
 	$state = $machine->getState();
 	
 	// filter input
@@ -196,7 +196,7 @@ $machine->addAction("/login/", "POST", function() {
 	if (!$user) {
 		$machine->plugin("Error")->raiseError("LOGIN_FAILED");
 	} else {
-		if (!password_verify($password, $user->password) {
+		if (!password_verify($password, $user->password)) {
 			$machine->plugin("Error")->raiseError("LOGIN_FAILED");
 		}
 	}

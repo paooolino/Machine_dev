@@ -88,9 +88,10 @@ class Machine {
 		if (isset($this->routes[$name]["GET"])) {
 			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
 		}
-		$this->routes[$name] = [
-			"GET" => $cb
-		];
+		if (!isset($this->routes[$name])) {
+			$routes[$name] = [];
+		}
+		$this->routes[$name]["GET"] = $cb;
 	}
 	
 	/**
@@ -105,9 +106,21 @@ class Machine {
 		if (isset($this->routes[$name][$method])) {
 			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
 		}
-		$this->routes[$name] = [
-			$method => $cb
-		];
+		if (!isset($this->routes[$name])) {
+			$routes[$name] = [];
+		}
+		$this->routes[$name][$method] = $cb;
+	}
+	
+	public function dumpRoutes() {
+		$routes = [];
+		foreach ($this->routes as $k => $v) {
+			$routes[] = [
+				"name" => $k,
+				"keys" => array_keys($v)
+			];
+		}
+		var_dump($routes);
 	}
 	
 	// used by plugins
