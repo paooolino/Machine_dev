@@ -21,6 +21,7 @@ class Machine {
 	 */
 	private $SERVER;
 	private $POST;
+	private $COOKIE;
 	
 	/**
 	 * Whether activate debug mode. Set by the constructor.
@@ -37,6 +38,7 @@ class Machine {
 	 *	Cocur\Slugify library
 	 */
 	private $slugify;
+	private $uuid;
 	
 	/**
 	 * Path constants.
@@ -56,9 +58,13 @@ class Machine {
 		if (!class_exists("\Cocur\Slugify\Slugify")) {
 			die("Error: \Cocur\Slugify\Slugify class not defined. Please run<br><pre>composer require cocur/slugify</pre><br>to add it to your project.");
 		}
+		if (!class_exists("\Ramsey\Uuid\Uuid")) {
+			die("Error: \Ramsey\Uuid\Uuid class not defined. Please run<br><pre>composer require ramsey/uuid</pre><br>to add it to your project.");
+		}		
 		
 		$this->SERVER = $state[0];
 		$this->POST = $state[1];
+		$this->COOKIE = $state[2];
 		$this->debug = $debug;
 		$this->plugins = [];
 		$this->slugify = new \Cocur\Slugify\Slugify();
@@ -66,6 +72,10 @@ class Machine {
 	
 	public function slugify($s) {
 		return $this->slugify->slugify($s);
+	}
+	
+	public function uuid() {
+		return \Ramsey\Uuid\Uuid::uuid4();
 	}
 	
 	/**
@@ -85,13 +95,7 @@ class Machine {
 	 *		]
 	 */
 	public function addPage($name, $cb) {
-		if (isset($this->routes[$name]["GET"])) {
-			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
-		}
-		if (!isset($this->routes[$name])) {
-			$routes[$name] = [];
-		}
-		$this->routes[$name]["GET"] = $cb;
+		$this->addRoute($name, "GET", $cb);
 	}
 	
 	/**
@@ -103,6 +107,10 @@ class Machine {
 	 *	@param $cb Function to be executed
 	 */
 	public function addAction($name, $method, $cb) {
+		$this->addRoute($name, $method, $cb);
+	}
+	
+	private function addRoute($name, $method, $cb) {
 		if (isset($this->routes[$name][$method])) {
 			die("Config Error: duplicated route. Route exists form GET method (" . $name . ")" );
 		}
@@ -234,6 +242,7 @@ class Machine {
 		return [
 			"SERVER" => $this->SERVER,
 			"POST" => $this->POST,
+			"COOKIE" => $this->COOKIE,
 			"routes" => $this->routes			
 		];
 	}

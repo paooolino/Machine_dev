@@ -1,15 +1,14 @@
 <?php
 require("../vendor/autoload.php");
 
-use Ramsey\Uuid\Uuid;
-
-$machine = new \Paooolino\Machine([$_SERVER, $_POST], true);
+$machine = new \Paooolino\Machine([$_SERVER, $_POST, $_COOKIE], true);
 
 $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 $machine->addPlugin("Database");
 $machine->addPlugin("Error");
 $machine->addPlugin("Email");
+$machine->addPlugin("Auth");
 
 $machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
 $machine->plugin("Email")->addHook("after_mail_send", function($machine, $date, $to, $subject, $html, $result) {
@@ -106,7 +105,7 @@ $machine->addAction("/register/", "POST", function($machine) {
 	$machine->plugin("Error")->raise();
 	
 	// save in db
-	$activid = md5(Uuid::uuid4());
+	$activid = md5($machine->uuid());
 	$machine->plugin("Database")->addItem("user", [
 		"email" => $email,
 		"password" => password_hash($password, PASSWORD_BCRYPT),
@@ -200,6 +199,9 @@ $machine->addAction("/login/", "POST", function($machine) {
 			$machine->plugin("Error")->raiseError("LOGIN_FAILED");
 		}
 	}
+	
+	// set cookies
+	$machine->plugin("Auth")->generateAuthCookies($user->id);
 
 	// success redirect
 	$path = $machine->plugin("Link")->Get("/");

@@ -77,9 +77,9 @@ class Error {
 		$this->machine->redirect("/error/" . $enc_codes . "/");
 	}
 	
-	// regiter & raise error immediatly
+	// add & raise error immediatly
 	public function raiseError($code, $message) {
-		$this->registerError($code, $message);
+		$this->addError($code);
 		$this->raise();
 	}
 }

@@ -4,6 +4,7 @@
 </head>
 <body>
 	<header>
+		<div class="loginbar"><?php echo($this->plugin("Auth")->checkLogin()); ?></div>
 		<div class="logo">Site name</div>
 		<div class="menu">
 			<ul>
