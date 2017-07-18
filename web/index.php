@@ -15,6 +15,8 @@ $machine->addPlugin("Error");
 $machine->addPlugin("Email");
 $machine->addPlugin("Auth");
 
+$machine->addPlugin("App");
+
 // setup database
 $machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
 
@@ -260,22 +262,72 @@ $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 // database initialization
 $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
+	
+	// league table
 	$machine->plugin("Database")->addItem("league", [
 		"name" => "Serie A",
 		"slug" => $machine->slugify('Serie A')
 	]);
-	$machine->plugin("Database")->addItem("league", [
-		"name" => "Serie B",
-		"slug" => $machine->slugify("Serie B")
+	
+	// user table
+	$machine->plugin("Database")->addItem("user", [
+		"email" => "paooolino@gmail.com",
+		"password" => '$2y$10$Vy05GvKyPkpl3lhM77GYl.oWUnHC24ZcPPWKvHGXzjvjqG7Q.t0DC',
+		"activid" => "770d8878863c42391a8d7be66b127a9e",
+		"active" => true
 	]);
-	$machine->plugin("Database")->addItem("league", [
-		"name" => "Lega Pro",
-		"slug" => $machine->slugify("Lega Pro")
+	
+	// loginsession table
+	$machine->plugin("Database")->addItem("loginsession", [
+		"user_id" => 1,
+		"sessioncode" => '6450f4122a1b493de1372ad5ad5e8b12',
+		"ip" => "127.0.0.1",
+		"created" => date("Y-m-d H:i:s")
+	]);	
+	
+	// logmail table
+	$machine->plugin("Database")->addItem("logmail", [
+		"date" => date("Y-m-d H:i:s"),
+		"to" => 'paooolino@gmail.com',
+		"subject" => "La tua registrazione a sportGame",
+		"html" => '
+			<p>Grazie per esserti registrato su <b>SportGame</b>!</p>
+			<p>Per attivare il tuo account, clicca sul seguente link:</p>
+			<p>http://machine.local/activate/770d8878863c42391a8d7be66b127a9e/</p>
+		',
+		"result" => 0
+	]);	
+	
+	// option table
+	$machine->plugin("Database")->addItem("options", [
+		"key" => "turn",
+		"value" => 0
+	]);	
+	
+	// country
+	$ita = $machine->plugin("Database")->addItem("country", [
+		"iso3" => "ITA",
+		"countryname" => "Italia"
 	]);
-	$machine->plugin("Database")->addItem("league", [
-		"name" => "Campionato Nazionale Dilettanti",
-		"slug" => $machine->slugify("Campionato Nazionale Dilettanti")
+	
+	// team
+	$milan = $machine->plugin("Database")->addItem("team", [
+		"teamname" => "Milan",
+		"prestige" => 10
+	]);	
+	
+	// player
+	$machine->plugin("Database")->addItem("player", [
+		"name" => "Paolo",
+		"surname" => "Rossi",
+		"age" => 27,
+		"role" => "A",
+		"strength" => 88,
+		"form" => 56,
+		"country" => $ita,
+		"team" => $milan
 	]);
+	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
 });

@@ -24,7 +24,7 @@ class Database {
 			$item->{$k} = $v;
 		}
 		$id = \RedBeanPHP\R::store($item);
-		return $id;
+		return $item;
 	}
 	
 	public function findAll($collectionName) {
