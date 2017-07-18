@@ -3,6 +3,11 @@ require("../vendor/autoload.php");
 
 $machine = new \Paooolino\Machine([$_SERVER, $_POST, $_COOKIE], true);
 
+// ============================================================================
+//	plugins configuration
+// ============================================================================
+
+// add plugins
 $machine->addPlugin("Link");
 $machine->addPlugin("Form");
 $machine->addPlugin("Database");
@@ -10,7 +15,10 @@ $machine->addPlugin("Error");
 $machine->addPlugin("Email");
 $machine->addPlugin("Auth");
 
+// setup database
 $machine->plugin("Database")->setUp("localhost", "root", "root", "sportgame_test");
+
+// use email hook to log sent emails in db
 $machine->plugin("Email")->addHook("after_mail_send", function($machine, $date, $to, $subject, $html, $result) {
 	$machine->plugin("Database")->addItem("logmail", [
 		"date" => $date,
@@ -20,13 +28,16 @@ $machine->plugin("Email")->addHook("after_mail_send", function($machine, $date, 
 		"result" => $result
 	]);
 });
+
+// set data callback for Auth in order to retrieve the user infos
 $machine->plugin("Auth")->setDataCallback(function($machine, $user_id) {
 	return $machine->plugin("Database")->getItem("user", $user_id);
 });
+
+// check Auth login in every page
 $machine->plugin("Auth")->checkLogin();
 
 // define forms
-
 $machine->plugin("Form")->addForm("Register", [
 	"action" => "/register/",
 	"fields" => [
@@ -36,13 +47,6 @@ $machine->plugin("Form")->addForm("Register", [
 	]
 ]);
 
-$machine->plugin("Error")->registerError("EMAIL_REGISTER", "Errore mail");
-$machine->plugin("Error")->registerError("PASSWORD_REGISTER", "Errore password");
-$machine->plugin("Error")->registerError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
-$machine->plugin("Error")->registerError("USER_NOT_PRESENT", "L'utente cercato non esiste.");
-$machine->plugin("Error")->registerError("USER_YET_ACTIVE", "L'utente è già attivo.");
-$machine->plugin("Error")->registerError("LOGIN_FAILED", "Impossibile completare l'operazione: le credenziali inserite non sono corrette, oppure l'utente non è attivo.");
-
 $machine->plugin("Form")->addForm("Login", [
 	"action" => "/login/",
 	"fields" => [
@@ -51,8 +55,20 @@ $machine->plugin("Form")->addForm("Login", [
 	]
 ]);
 
-// define pages and actions
+// define errors
+$machine->plugin("Error")->registerError("EMAIL_REGISTER", "Errore mail");
+$machine->plugin("Error")->registerError("PASSWORD_REGISTER", "Errore password");
+$machine->plugin("Error")->registerError("PASSWORD_REGISTER_CONFIRM", "Le due password non corrispondono");
+$machine->plugin("Error")->registerError("USER_NOT_PRESENT", "L'utente cercato non esiste.");
+$machine->plugin("Error")->registerError("USER_YET_ACTIVE", "L'utente è già attivo.");
+$machine->plugin("Error")->registerError("LOGIN_FAILED", "Impossibile completare l'operazione: le credenziali inserite non sono corrette, oppure l'utente non è attivo.");
 
+// ============================================================================
+//	pages and actions
+// ============================================================================
+
+// home
+// ============================================================================
 $machine->addPage("/", function($machine) {
 	return [
 		"template" => "home.php",
@@ -62,6 +78,8 @@ $machine->addPage("/", function($machine) {
 	];
 });
 
+// informative pages
+// ============================================================================
 $machine->addPage("/chi-siamo/", function() {
 	return [
 		"template" => "page.php",
@@ -73,6 +91,8 @@ $machine->addPage("/chi-siamo/", function() {
 	];
 });
 	
+// registration
+// ============================================================================
 $machine->addPage("/registrati/", function() {
 	return [
 		"template" => "page.php",
@@ -132,6 +152,8 @@ $machine->addAction("/register/", "POST", function($machine) {
 	$machine->redirect($path);
 });
 
+// activation
+// ============================================================================
 $machine->addAction("/activate/{activid}/", "GET", function($machine, $activid) {
 	$user = $machine->plugin("Database")->getItemByField("user", "activid", $activid);
 	
@@ -163,6 +185,8 @@ $machine->addPage("/activation-completed/", function() {
 	];
 });
 
+// login
+// ============================================================================
 $machine->addPage("/login/", function() {
 	return [
 		"template" => "page.php",
@@ -216,6 +240,8 @@ $machine->addAction("/login/", "POST", function($machine) {
 	$machine->redirect($path);	
 });
 
+// league pages
+// ============================================================================
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
 	return [
@@ -227,8 +253,11 @@ $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	];
 });
 
-// action to init db
+// ============================================================================
+//	debug/testing
+// ============================================================================
 
+// database initialization
 $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
 	$machine->plugin("Database")->addItem("league", [
