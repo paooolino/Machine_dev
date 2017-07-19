@@ -115,7 +115,7 @@ class App {
 		}
 	}
 	
-	private function getStandings($league_level) {
+	public function getStandings($league_level) {
 		return $this->db->find("standing", "league_id = ?", [$league_level]);
 	}
 

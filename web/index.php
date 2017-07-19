@@ -246,11 +246,11 @@ $machine->addAction("/login/", "POST", function($machine) {
 // ============================================================================
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
-	$standings = $machine->plugin("App")->getStandings($league->level)
+	$standings = $machine->plugin("App")->getStandings($league->level);
 	return [
 		"template" => "league.php",
 		"data" => [
-			"league" => $league,
+			"standings" => $standings,
 			"titolo" => $league->name,
 			"testo" => "League infos."
 		]
