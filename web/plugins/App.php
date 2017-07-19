@@ -8,6 +8,23 @@ class App {
 	
 	private $league_names = ["Serie A", "Serie B", "Lega Pro", "Campionato Nazionale Dilettanti"];
 	
+	/**
+	 *	fixtures matrixes
+	 */
+	private $fixtures = [
+		"10" => [
+			[[1,10],[2,9],[3,8],[4,7],[5,6]],
+			[[10,6],[7,5],[8,4],[9,3],[1,2]],
+			[[2,10],[3,1],[4,9],[5,8],[6,7]],
+			[[10,7],[8,6],[9,5],[1,4],[2,3]],
+			[[3,10],[4,2],[5,1],[6,9],[7,8]],
+			[[10,8],[9,7],[1,6],[2,5],[3,4]],
+			[[4,10],[5,3],[6,2],[7,1],[8,9]],
+			[[10,9],[1,8],[2,7],[3,6],[4,5]],
+			[[5,10],[6,4],[7,3],[8,2],[9,1]]
+		]
+	];
+	
 	function __construct($machine) {
 		$this->machine = $machine;
 		$this->db = $this->machine->plugin("Database");
@@ -76,8 +93,30 @@ class App {
 			}
 		}
 	}
-	
+
 	public function createFixtures() {
-		//
+		$leagues = $this->db->find("league", "ORDER BY level ASC");
+		foreach ($leagues as $league) {
+			$teams = array_values($this->getTeamsByLeague($league->level));
+			shuffle($teams);
+			$fixtures = $this->fixtures[10];
+			for ($i = 0; $i < count($fixtures); $i++) {
+				for ($j = 0; $j < count($fixtures[$i]); $j++) {
+					$this->db->addItem('match', [
+						"round" => $i + 1,
+						"league" => $league,
+						"team1" => $teams[$fixtures[$i][$j][0]-1],
+						"team2" => $teams[$fixtures[$i][$j][1]-1],
+						"goal1" => 0,
+						"goal2" => 0
+					]);
+				}
+			}
+		}
 	}
+	
+	private function getTeamsByLeague($league_level) {
+		return $this->db->find("standing", "league_id = ?", [$league_level]);
+	}
+
 }
