@@ -264,18 +264,6 @@ $machine->addAction("/sample-database/nuke/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
 });
 
-$machine->addAction("/sample-database/league/", "GET", function($machine) {
-	$leaguenames = [
-		"Serie A", "Serie B", "Lega Pro", "Campionato Nazionale Dilettanti"
-	];
-	foreach ($leaguenames as $leaguename) {
-		$machine->plugin("Database")->addItem("league", [
-			"name" => $leaguename,
-			"slug" => $machine->slugify($leaguename)
-		]);		
-	}
-});
-
 $machine->addAction("/sample-database/user/", "GET", function($machine) {
 	$machine->plugin("Database")->addItem("user", [
 		"email" => "paooolino@gmail.com",
@@ -347,6 +335,10 @@ $machine->addAction("/init/", "GET", function($machine) {
 	file_get_contents($machine->siteurl . "/sample-database/option/");
 	file_get_contents($machine->siteurl . "/sample-database/country/");
 	file_get_contents($machine->siteurl . "/sample-database/team/");
+	
+	$machine->plugin("App")->createLeagues();
+	$machine->plugin("App")->createStandings();
+	$machine->plugin("App")->createFixtures();
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
