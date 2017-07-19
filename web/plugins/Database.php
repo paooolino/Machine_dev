@@ -46,4 +46,26 @@ class Database {
 	public function nuke() {
 		\RedBeanPHP\R::nuke();
 	}
+	
+	public function importCSV($table, $filepath) {
+		$csv = array_map("str_getcsv", file($filepath));
+		$fieldnames = [];
+		$line = 0;
+		foreach ($csv as $record) {
+			$line++;
+			if ($line == 1) {
+				foreach ($record as $fieldname) {
+					$fieldnames[] = $fieldname;
+				}
+			} else {
+				$itemdata = [];
+				for ($i = 0; $i < count($record); $i++) {
+					$fieldname = $fieldnames[$i];
+					$fieldvalue = $record[$i];
+					$itemdata[$fieldname] = $fieldvalue;
+				}				
+				$this->addItem($table, $itemdata);
+			}
+		}
+	}
 }

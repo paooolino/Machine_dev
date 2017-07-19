@@ -259,33 +259,42 @@ $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 //	debug/testing
 // ============================================================================
 
-// database initialization
-$machine->addAction("/init/", "GET", function($machine) {
+// sample db
+$machine->addAction("/sample-database/nuke/", "GET", function($machine) {
 	$machine->plugin("Database")->nuke();
-	
-	// league table
-	$machine->plugin("Database")->addItem("league", [
-		"name" => "Serie A",
-		"slug" => $machine->slugify('Serie A')
-	]);
-	
-	// user table
+});
+
+$machine->addAction("/sample-database/league/", "GET", function($machine) {
+	$leaguenames = [
+		"Serie A", "Serie B", "Lega Pro", "Campionato Nazionale Dilettanti"
+	];
+	foreach ($leaguenames as $leaguename) {
+		$machine->plugin("Database")->addItem("league", [
+			"name" => $leaguename,
+			"slug" => $machine->slugify($leaguename)
+		]);		
+	}
+});
+
+$machine->addAction("/sample-database/user/", "GET", function($machine) {
 	$machine->plugin("Database")->addItem("user", [
 		"email" => "paooolino@gmail.com",
 		"password" => '$2y$10$Vy05GvKyPkpl3lhM77GYl.oWUnHC24ZcPPWKvHGXzjvjqG7Q.t0DC',
 		"activid" => "770d8878863c42391a8d7be66b127a9e",
 		"active" => true
 	]);
-	
-	// loginsession table
+});
+
+$machine->addAction("/sample-database/loginsession/", "GET", function($machine) {
 	$machine->plugin("Database")->addItem("loginsession", [
 		"user_id" => 1,
 		"sessioncode" => '6450f4122a1b493de1372ad5ad5e8b12',
 		"ip" => "127.0.0.1",
 		"created" => date("Y-m-d H:i:s")
-	]);	
-	
-	// logmail table
+	]);
+});
+
+$machine->addAction("/sample-database/logmail/", "GET", function($machine) {
 	$machine->plugin("Database")->addItem("logmail", [
 		"date" => date("Y-m-d H:i:s"),
 		"to" => 'paooolino@gmail.com',
@@ -297,36 +306,47 @@ $machine->addAction("/init/", "GET", function($machine) {
 		',
 		"result" => 0
 	]);	
-	
-	// option table
-	$machine->plugin("Database")->addItem("options", [
-		"key" => "turn",
-		"value" => 0
+});
+
+$machine->addAction("/sample-database/option/", "GET", function($machine) {
+	$machine->plugin("Database")->addItem("option", [
+		"optkey" => "turn",
+		"optvalue" => 0
 	]);	
-	
-	// country
-	$ita = $machine->plugin("Database")->addItem("country", [
-		"iso3" => "ITA",
-		"countryname" => "Italia"
-	]);
-	
-	// team
-	$milan = $machine->plugin("Database")->addItem("team", [
-		"teamname" => "Milan",
-		"prestige" => 10
-	]);	
-	
-	// player
-	$machine->plugin("Database")->addItem("player", [
-		"name" => "Paolo",
-		"surname" => "Rossi",
-		"age" => 27,
-		"role" => "A",
-		"strength" => 88,
-		"form" => 56,
-		"country" => $ita,
-		"team" => $milan
-	]);
+});
+
+$machine->addAction("/sample-database/country/", "GET", function($machine) {
+	$machine->plugin("Database")->importCSV("country", "data/countries.csv");
+});
+
+$machine->addAction("/sample-database/team/", "GET", function($machine) {
+	$machine->plugin("Database")->importCSV("team", "data/teams.csv");
+});
+
+/*
+$machine->addAction("/sample-database/reponames/", "GET", function($machine) {
+	$machine->plugin("Database")->importCSV("reponames", "data/names.csv");
+});
+
+$machine->addAction("/sample-database/reposurnames/", "GET", function($machine) {
+	$machine->plugin("Database")->importCSV("reposurnames", "data/surnames.csv");
+});
+
+$machine->addAction("/sample-database/player/", "GET", function($machine) {
+	//
+});
+*/
+
+// database initialization
+$machine->addAction("/init/", "GET", function($machine) {
+	file_get_contents($machine->siteurl . "/sample-database/nuke/");
+	file_get_contents($machine->siteurl . "/sample-database/league/");
+	file_get_contents($machine->siteurl . "/sample-database/user/");
+	file_get_contents($machine->siteurl . "/sample-database/loginsession/");
+	file_get_contents($machine->siteurl . "/sample-database/logmail/");
+	file_get_contents($machine->siteurl . "/sample-database/option/");
+	file_get_contents($machine->siteurl . "/sample-database/country/");
+	file_get_contents($machine->siteurl . "/sample-database/team/");
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

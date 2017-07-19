@@ -41,6 +41,11 @@ class Machine {
 	private $uuid;
 	
 	/**
+	 *	The site url root.
+	 */
+	public $siteurl;
+	
+	/**
 	 * Path constants.
 	 */
 	const TEMPLATE_PATH = "templates/";
@@ -68,6 +73,9 @@ class Machine {
 		$this->debug = $debug;
 		$this->plugins = [];
 		$this->slugify = new \Cocur\Slugify\Slugify();
+		
+		$this->siteurl = $this->SERVER["REQUEST_SCHEME"] . "://" . 
+			$this->SERVER["HTTP_HOST"];
 	}
 	
 	public function slugify($s) {
