@@ -97,16 +97,16 @@ class App {
 	public function createFixtures() {
 		$leagues = $this->db->find("league", "ORDER BY level ASC");
 		foreach ($leagues as $league) {
-			$teams = array_values($this->getTeamsByLeague($league->level));
-			shuffle($teams);
+			$standings = array_values($this->getStandings($league->level));
+			shuffle($standings);
 			$fixtures = $this->fixtures[10];
 			for ($i = 0; $i < count($fixtures); $i++) {
 				for ($j = 0; $j < count($fixtures[$i]); $j++) {
 					$this->db->addItem('match', [
 						"round" => $i + 1,
 						"league" => $league,
-						"team1" => $teams[$fixtures[$i][$j][0]-1],
-						"team2" => $teams[$fixtures[$i][$j][1]-1],
+						"team1" => $standings[$fixtures[$i][$j][0]-1]->team,
+						"team2" => $standings[$fixtures[$i][$j][1]-1]->team,
 						"goal1" => 0,
 						"goal2" => 0
 					]);
@@ -115,7 +115,7 @@ class App {
 		}
 	}
 	
-	private function getTeamsByLeague($league_level) {
+	private function getStandings($league_level) {
 		return $this->db->find("standing", "league_id = ?", [$league_level]);
 	}
 

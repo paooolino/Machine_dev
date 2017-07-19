@@ -246,9 +246,11 @@ $machine->addAction("/login/", "POST", function($machine) {
 // ============================================================================
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
+	$standings = $machine->plugin("App")->getStandings($league->level)
 	return [
-		"template" => "page.php",
+		"template" => "league.php",
 		"data" => [
+			"league" => $league,
 			"titolo" => $league->name,
 			"testo" => "League infos."
 		]
@@ -335,7 +337,7 @@ $machine->addAction("/init/", "GET", function($machine) {
 	file_get_contents($machine->siteurl . "/sample-database/option/");
 	file_get_contents($machine->siteurl . "/sample-database/country/");
 	file_get_contents($machine->siteurl . "/sample-database/team/");
-	
+
 	$machine->plugin("App")->createLeagues(5);
 	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();

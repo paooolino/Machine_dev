@@ -51,6 +51,10 @@ class Database {
 		\RedBeanPHP\R::nuke();
 	}
 	
+	public function wipe($table) {
+		\RedBeanPHP\R::wipe($table);
+	}
+	
 	public function importCSV($table, $filepath) {
 		$csv = array_map("str_getcsv", file($filepath));
 		$fieldnames = [];
