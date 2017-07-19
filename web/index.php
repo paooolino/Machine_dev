@@ -336,7 +336,8 @@ $machine->addAction("/init/", "GET", function($machine) {
 	file_get_contents($machine->siteurl . "/sample-database/country/");
 	file_get_contents($machine->siteurl . "/sample-database/team/");
 	
-	$machine->plugin("App")->createLeagues();
+	$machine->plugin("App")->createLeagues(5);
+	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();
 	$machine->plugin("App")->createFixtures();
 	

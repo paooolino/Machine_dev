@@ -4,36 +4,65 @@ namespace Plugin;
 class App {
 	
 	private $machine;
+	private $db;
+	
+	private $league_names = ["Serie A", "Serie B", "Lega Pro", "Campionato Nazionale Dilettanti"];
 	
 	function __construct($machine) {
 		$this->machine = $machine;
+		$this->db = $this->machine->plugin("Database");
 	}
 	
 	/**
-	 *	define sportrights
+	 *	create leagues
+	 *
+	 *	@param $n_leagues Integer The number of leagues to create.
 	 */
-	public function createLeagues($n_leagues, $teams_per_league) {
-		//
+	public function createLeagues($n_leagues) {
+		for ($i = 0; $i < $n_leagues; $i++) {
+			// define league name
+			$leaguename = "League " . ($i + 1);
+			if (isset($this->league_names[$i])) {
+				$leaguename = $this->league_names[$i];
+			}
+			
+			// save league in db
+			$league = $this->db->addItem('league', [
+				"name" => $leaguename,
+				"slug" => $this->machine->slugify($leaguename),
+				"level" => ($i + 1)
+			]);
+		}
 	}
 	
 	/**
-	 *	starting from teams and their sportright compose standings. 
+	 *	assign sportrights
+	 */
+	public function assignSportrights($teams_per_league) {
+		$leagues = $this->db->find("league", "ORDER BY level ASC");
+		$teams = array_values($this->db->find("team", "ORDER BY prestige DESC, RAND()"));
+
+		$team_cont = 0;
+		foreach ($leagues as $league) {
+			for ($i = 0; $i < $teams_per_league; $i++) {
+				$teams[$team_cont]->sportright = $league->level;
+				$this->db->update($teams[$team_cont]);
+				$team_cont++;
+			}
+		}
+	}
+	
+	/**
+	 *	based on teams and their sportright compose standings. 
 	 */
 	public function createStandings() {
-		/*
-		for ($i = 0; $i < self::N_LEAGUES; $i++) {
-			// create league
-			$leaguename = "League " . ($i + 1);
-			$league = $this->machine->plugin("Database")->addItem('league', [
-				"name" => $leaguename,
-				"slug" => $this->machine->slugify($leaguename)
-			]);
-			
+		$leagues = $this->db->find("league", "ORDER BY level ASC");
+		foreach ($leagues as $league) {
 			// look for teams with sportright to play in the league
-			$teams = $this->machine->plugin("Database")->find('team', 'sportright = ?', [$i+1]);
+			$teams = $this->db->find('team', 'sportright = ?', [$league->level]);
 			// compose standings
 			foreach ($teams as $team) {
-				$this->machine->plugin("Database")->addItem('standing', [
+				$this->db->addItem('standing', [
 					"team" => $team,
 					"league" => $league,
 					"played" => 0,
@@ -46,7 +75,6 @@ class App {
 				]);
 			}
 		}
-		*/
 	}
 	
 	public function createFixtures() {
