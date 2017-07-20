@@ -39,6 +39,9 @@ $machine->plugin("Auth")->setDataCallback(function($machine, $user_id) {
 // check Auth login in every page
 $machine->plugin("Auth")->checkLogin();
 
+// check if turns to pass
+$machine->plugin("App")->passTurn();
+
 // define forms
 $machine->plugin("Form")->addForm("Register", [
 	"action" => "/register/",
@@ -317,6 +320,14 @@ $machine->addAction("/sample-database/option/", "GET", function($machine) {
 		"optkey" => "turn",
 		"optvalue" => 0
 	]);	
+	$machine->plugin("Database")->addItem("option", [
+		"optkey" => "gameStartedAt",
+		"optvalue" => date("Y-m-d H:i:s")
+	]);	
+	$machine->plugin("Database")->addItem("option", [
+		"optkey" => "turnLengthMinutes",
+		"optvalue" => 60
+	]);
 });
 
 $machine->addAction("/sample-database/country/", "GET", function($machine) {
@@ -356,6 +367,7 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();
 	$machine->plugin("App")->createFixtures(10);
+	$machine->plugin("App")->passTurn(1);
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

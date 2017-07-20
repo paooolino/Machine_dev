@@ -5,6 +5,7 @@
 <body>
 	<header>
 		<div class="loginbar">
+			Turn: <?php echo $App->getOption("turn"); ?> |
 			<?php if ($Auth->logged_user_id > 0) { ?>
 				Hello, <?php echo $Auth->data->email; ?>
 			<?php } else { ?>
