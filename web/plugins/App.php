@@ -124,11 +124,6 @@ class App {
 	public function getNextMatches($league_level) {
 		return $this->db->find("match", "league_id = ? AND played = 0 AND scheduledturn = (SELECT MIN(scheduledturn) FROM `match`)", [$league_level]);
 	}
-
-	public function getOption($optkey) {
-		$bean = $this->db->getItemByField("option", "optkey", $optkey);
-		return $bean->optvalue;
-	}
 	
 	public function setOption($optkey, $optvalue) {
 		$bean = $this->db->getItemByField("option", "optkey", $optkey);
@@ -139,15 +134,26 @@ class App {
 	public function passTurn($n_turns = 0) {
 		if ($n_turns == 0) {
 			// how many turns to pass until last time?
-			$gameStartedAt = $this->getOption("gameStartedAt");
-			$turnLengthMinutes = intval($this->getOption("turnLengthMinutes"));
+			$gameStartedAt = $this->GetOption("gameStartedAt");
+			$turnLengthMinutes = intval($this->GetOption("turnLengthMinutes"));
 			
 			$time = time() - strtotime($gameStartedAt);
 			$n_turns = floor($time / ($turnLengthMinutes * 60));
 		}
 		if ($n_turns > 0) {
-			$turn = intval($this->getOption("turn"));
+			$turn = intval($this->GetOption("turn"));
 			$this->setOption("turn", $turn + $n_turns);
 		}
+	}
+	
+	// tags
+	
+	public function GetOption($params) {
+		if (gettype($params) == "string") {
+			$params = [$params];
+		}
+		$optkey = $params[0];
+		$bean = $this->db->getItemByField("option", "optkey", $optkey);
+		return $bean->optvalue;
 	}
 }
