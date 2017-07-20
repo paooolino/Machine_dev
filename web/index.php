@@ -14,6 +14,7 @@ $machine->addPlugin("Database");
 $machine->addPlugin("Error");
 $machine->addPlugin("Email");
 $machine->addPlugin("Auth");
+$machine->addPlugin("Breadcrumb");
 
 $machine->addPlugin("App");
 
@@ -248,9 +249,17 @@ $machine->addAction("/login/", "POST", function($machine) {
 // league pages
 // ============================================================================
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
+	$Link = $machine->plugin("Link");
+
+	// get content data
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
 	$standings = $machine->plugin("App")->getStandings($league->level);
 	$matches = $machine->plugin("App")->getNextMatches($league->level);
+
+	// add breadcrumb
+	$machine->plugin("Breadcrumb")->add("Home", $Link->Get("/"));
+	$machine->plugin("Breadcrumb")->setLabel($league->name);
+	
 	return [
 		"template" => "league.php",
 		"data" => [

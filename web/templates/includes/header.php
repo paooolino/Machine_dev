@@ -22,4 +22,5 @@
 				<li><a href="{{Link|Get|/init/}}">Init database</a></li>
 			</ul>
 		</div>
+		{{Breadcrumb|Render}}
 	</header>

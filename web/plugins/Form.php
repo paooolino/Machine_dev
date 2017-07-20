@@ -32,25 +32,6 @@ class Form {
 		$this->forms[$name] = $opts;
 	}
 	
-	public function Render($params) {
-		$formName = $params[0];
-		
-		$html_rows = "";
-		foreach ($this->forms[$formName]["fields"] as $formField) {
-			$html_rows .= $this->machine->populate_template($this->formrow_template, [
-				"LABEL" => $this->getFormLabel($formField),
-				"FIELD" => $this->getFormField($formField)
-			]);
-		}
-		
-		$html = $this->machine->populate_template($this->form_template, [
-			"FORMACTION" => $this->forms[$formName]["action"],
-			"FORMROWS" => $html_rows
-		]);
-		
-		return $html;
-	}
-	
 	private function getFormLabel($formField) {
 		$type = gettype($formField);
 		if ($type == "string") {
@@ -74,5 +55,26 @@ class Form {
 					break;
 			}
 		}
+	}
+	
+	// tags
+	
+	public function Render($params) {
+		$formName = $params[0];
+		
+		$html_rows = "";
+		foreach ($this->forms[$formName]["fields"] as $formField) {
+			$html_rows .= $this->machine->populate_template($this->formrow_template, [
+				"LABEL" => $this->getFormLabel($formField),
+				"FIELD" => $this->getFormField($formField)
+			]);
+		}
+		
+		$html = $this->machine->populate_template($this->form_template, [
+			"FORMACTION" => $this->forms[$formName]["action"],
+			"FORMROWS" => $html_rows
+		]);
+		
+		return $html;
 	}
 }
