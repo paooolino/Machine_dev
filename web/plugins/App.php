@@ -131,19 +131,24 @@ class App {
 		$this->db->update($bean);
 	}
 	
-	public function passTurn($n_turns = 0) {
-		if ($n_turns == 0) {
-			// how many turns to pass until last time?
-			$gameStartedAt = $this->GetOption("gameStartedAt");
-			$turnLengthMinutes = intval($this->GetOption("turnLengthMinutes"));
-			
-			$time = time() - strtotime($gameStartedAt);
-			$n_turns = floor($time / ($turnLengthMinutes * 60));
+	public function checkTime() {
+		$current_turn = intval($this->GetOption("turn"));
+		$time_passed = time() - strtotime($this->GetOption("gameStartedAt"));
+		$target_turn = floor($time_passed / (intval($this->GetOption("turnLengthMinutes")) * 60));
+		$turns_to_pass = $target_turn - $current_turn;
+		if ($turns_to_pass == 0) {
+			return;
 		}
-		if ($n_turns > 0) {
-			$turn = intval($this->GetOption("turn"));
-			$this->setOption("turn", $turn + $n_turns);
+		if ($turns_to_pass > 0) {
+			for ($i = 0; $i < $turns_to_pass; $i++) {
+				$this->passTurn();
+			}
 		}
+		$this->setOption("turn", $target_turn);
+	}
+	
+	private function passTurn() {
+		//
 	}
 	
 	// tags

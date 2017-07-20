@@ -41,7 +41,7 @@ $machine->plugin("Auth")->setDataCallback(function($machine, $user_id) {
 $machine->plugin("Auth")->checkLogin();
 
 // check if turns to pass
-$machine->plugin("App")->passTurn();
+$machine->plugin("App")->checkTime();
 
 // define forms
 $machine->plugin("Form")->addForm("Register", [
@@ -363,6 +363,7 @@ $machine->addAction("/sample-database/player/", "GET", function($machine) {
 
 // database initialization
 $machine->addAction("/init/", "GET", function($machine) {
+	/*
 	file_get_contents($machine->siteurl . "/sample-database/nuke/");
 	file_get_contents($machine->siteurl . "/sample-database/league/");
 	file_get_contents($machine->siteurl . "/sample-database/user/");
@@ -376,7 +377,7 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();
 	$machine->plugin("App")->createFixtures(10);
-	$machine->plugin("App")->passTurn(1);
+	*/
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);
