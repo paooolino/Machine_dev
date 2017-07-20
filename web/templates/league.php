@@ -33,17 +33,17 @@
 		</tbody>
 	</table>
 </div>
-<h2>Prossimo turno</h2>
+<h2>Calendario</h2>
 <div>
 	<table>
 		<tbody>
-			<?php foreach ($matches as $match) { ?>
+			<?php foreach ($fullcalendar as $match) { ?>
 			<tr>
 				<td><?php echo $match->scheduledturn; ?></td>
 				<td><?php echo $match->fetchAs('team')->team1->teamname; ?></td>
 				<td><?php echo $match->fetchAs('team')->team2->teamname; ?></td>
 				<?php if ($match->played) { ?>
-					<td><?php echo $match->goal1; ?> - <?php echo $match->goal1; ?></td>
+					<td><?php echo $match->goal1; ?> - <?php echo $match->goal2; ?></td>
 				<?php } else { ?>
 					<td> - </td>
 				<?php } ?>

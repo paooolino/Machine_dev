@@ -31,6 +31,10 @@ class Database {
 		return \RedBeanPHP\R::findAll($collectionName);
 	}
 	
+	public function exec($query) {
+		return \RedBeanPHP\R::exec($query);
+	}
+	
 	public function find($collectionName, $whereSQL, $boundData = []) {
 		return \RedBeanPHP\R::find($collectionName, " " . $whereSQL . " ", $boundData);
 	}

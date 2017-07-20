@@ -15,6 +15,7 @@ $machine->addPlugin("Error");
 $machine->addPlugin("Email");
 $machine->addPlugin("Auth");
 $machine->addPlugin("Breadcrumb");
+$machine->addPlugin("Log");
 
 $machine->addPlugin("App");
 
@@ -254,8 +255,9 @@ $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	// get content data
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
 	$standings = $machine->plugin("App")->getStandings($league->level);
-	$matches = $machine->plugin("App")->getNextMatches($league->level);
-
+	//$matches = $machine->plugin("App")->getNextMatches($league->level);
+	$fullcalendar = $machine->plugin("App")->getFullCalendar($league->level);
+	
 	// add breadcrumb
 	$machine->plugin("Breadcrumb")->add("Home", $Link->Get("/"));
 	$machine->plugin("Breadcrumb")->setLabel($league->name);
@@ -264,7 +266,7 @@ $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 		"template" => "league.php",
 		"data" => [
 			"standings" => $standings,
-			"matches" => $matches,
+			"fullcalendar" => $fullcalendar,
 			"titolo" => $league->name,
 			"testo" => "League infos."
 		]
@@ -335,7 +337,7 @@ $machine->addAction("/sample-database/option/", "GET", function($machine) {
 	]);	
 	$machine->plugin("Database")->addItem("option", [
 		"optkey" => "turnLengthMinutes",
-		"optvalue" => 60
+		"optvalue" => 1
 	]);
 });
 

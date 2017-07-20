@@ -60,6 +60,7 @@ class App {
 		$teams = array_values($this->db->find("team", "ORDER BY prestige DESC, RAND()"));
 
 		$team_cont = 0;
+		$this->db->exec("UPDATE team SET sportright = 0");
 		foreach ($leagues as $league) {
 			for ($i = 0; $i < $teams_per_league; $i++) {
 				$teams[$team_cont]->sportright = $league->level;
@@ -122,7 +123,11 @@ class App {
 	}
 	
 	public function getNextMatches($league_level) {
-		return $this->db->find("match", "league_id = ? AND played = 0 AND scheduledturn = (SELECT MIN(scheduledturn) FROM `match`)", [$league_level]);
+		return $this->db->find("match", "league_id = ? AND played = 0 AND scheduledturn = (SELECT MIN(scheduledturn) FROM `match` WHERE played = 0)", [$league_level]);
+	}
+	
+	public function getFullCalendar($league_level) {
+		return $this->db->find("match", "league_id = ?", [$league_level]);
 	}
 	
 	public function setOption($optkey, $optvalue) {
@@ -194,10 +199,12 @@ class App {
 		$current_state = "middle";
 		$goal_1 = 0;
 		$goal_2 = 0;
+		//$this->machine->plugin("Log")->log($team1->teamname . " - " . $team2->teamname, "Match begins!");
 		for ($i = 0; $i < 90; $i++) {
 			$p = $weigths[$current_state];
 			$result = $this->event($p);
 			$next_state = $result ? $transitions[$current_state][1] : $transitions[$current_state][0];
+			//$this->machine->plugin("Log")->log($team1->teamname . " - " . $team2->teamname, $next_state);
 			if ($next_state == -1) {
 				$goal_2++;
 				$current_state = "middle";
@@ -222,9 +229,9 @@ class App {
 		$standing1->played++;
 		$standing2->played++;
 		$standing1->goalscored += $goal_1;
-		$standing1->goalscored += $goal_2;
+		$standing2->goalscored += $goal_2;
 		$standing1->goalconceded += $goal_2;
-		$standing1->goalconceded += $goal_1;	
+		$standing2->goalconceded += $goal_1;	
 		if ($goal_1 > $goal_2) {
 			$standing1->won++;
 			$standing2->lost++;
