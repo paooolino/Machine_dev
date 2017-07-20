@@ -20,7 +20,7 @@
 			<?php $count = 1; foreach ($standings as $standing) { ?>
 			<tr>
 				<td><?php echo $count; ?></td>
-				<td><?php echo $standing->team->teamname; ?></td>
+				<td><a href="{{Link|Get|/team/<?php echo $standing->team_id; ?>/}}"><?php echo $standing->team->teamname; ?></a></td>
 				<td><?php echo $standing->played; ?></td>
 				<td><?php echo $standing->won; ?></td>
 				<td><?php echo $standing->draw; ?></td>
@@ -34,4 +34,22 @@
 	</table>
 </div>
 <h2>Prossimo turno</h2>
+<div>
+	<table>
+		<tbody>
+			<?php foreach ($matches as $match) { ?>
+			<tr>
+				<td><?php echo $match->scheduledturn; ?></td>
+				<td><?php echo $match->fetchAs('team')->team1->teamname; ?></td>
+				<td><?php echo $match->fetchAs('team')->team2->teamname; ?></td>
+				<?php if ($match->played) { ?>
+					<td><?php echo $match->goal1; ?> - <?php echo $match->goal1; ?></td>
+				<?php } else { ?>
+					<td> - </td>
+				<?php } ?>
+			</tr>
+			<?php } ?>
+		</tbody>
+	</table>
+</div>
 <?php include("includes/footer.php"); ?>

@@ -94,7 +94,7 @@ class App {
 		}
 	}
 
-	public function createFixtures() {
+	public function createFixtures($scheduled_turn = 0) {
 		$leagues = $this->db->find("league", "ORDER BY level ASC");
 		foreach ($leagues as $league) {
 			$standings = array_values($this->getStandings($league->level));
@@ -104,11 +104,13 @@ class App {
 				for ($j = 0; $j < count($fixtures[$i]); $j++) {
 					$this->db->addItem('match', [
 						"round" => $i + 1,
+						"scheduledturn" => $scheduled_turn + (($i + 1) *7),
 						"league" => $league,
 						"team1" => $standings[$fixtures[$i][$j][0]-1]->team,
 						"team2" => $standings[$fixtures[$i][$j][1]-1]->team,
 						"goal1" => 0,
-						"goal2" => 0
+						"goal2" => 0,
+						"played" => false
 					]);
 				}
 			}
@@ -117,6 +119,10 @@ class App {
 	
 	public function getStandings($league_level) {
 		return $this->db->find("standing", "league_id = ?", [$league_level]);
+	}
+	
+	public function getNextMatches($league_level) {
+		return $this->db->find("match", "league_id = ? AND played = 0 AND scheduledturn = (SELECT MIN(scheduledturn) FROM `match`)", [$league_level]);
 	}
 
 }

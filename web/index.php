@@ -247,12 +247,26 @@ $machine->addAction("/login/", "POST", function($machine) {
 $machine->addPage("/league/{leagueslug}/", function($machine, $leagueslug) {
 	$league = $machine->plugin("Database")->getItemByField("league", "slug", $leagueslug);
 	$standings = $machine->plugin("App")->getStandings($league->level);
+	$matches = $machine->plugin("App")->getNextMatches($league->level);
 	return [
 		"template" => "league.php",
 		"data" => [
 			"standings" => $standings,
+			"matches" => $matches,
 			"titolo" => $league->name,
 			"testo" => "League infos."
+		]
+	];
+});
+
+// team pages
+// ============================================================================
+$machine->addPage("/team/{team_id}/", function($machine, $team_id) {
+	$team = $machine->plugin("Database")->getItem("team", $team_id);
+	return [
+		"template" => "page.php",
+		"data" => [
+			"titolo" => $team->teamname
 		]
 	];
 });
@@ -341,7 +355,7 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("App")->createLeagues(5);
 	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();
-	$machine->plugin("App")->createFixtures();
+	$machine->plugin("App")->createFixtures(10);
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

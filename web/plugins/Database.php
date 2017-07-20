@@ -36,7 +36,7 @@ class Database {
 	}
 	
 	public function getItem($table, $id) {
-		return \RedBeanPHP\R::findOne($table, $id);
+		return \RedBeanPHP\R::load($table, $id);
 	}
 	
 	public function getItemByField($table, $field, $value) {
