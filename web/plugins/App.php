@@ -144,11 +144,69 @@ class App {
 				$this->passTurn();
 			}
 		}
-		$this->setOption("turn", $target_turn);
 	}
 	
 	private function passTurn() {
-		//
+		$turn = intval($this->GetOption("turn"));
+		$this->setOption("turn", $turn + 1);
+		$this->updateMatches();
+	}
+	
+	private function updateMatches() {
+		// find scheduled matches for today
+		$matches = $this->db->find("match", "played = 0 AND scheduledturn = ?", [intval($this->GetOption("turn"))]);
+		foreach ($matches as $match) {
+			$this->playMatch($match);
+		}
+	}
+	
+	private function playMatch($match) {
+		// weights are related to team 1 probability of win
+		$weigths = [
+			"middle" => 50,
+			"attack" => 25,
+			"score" => 12,
+			"defend" => 75,
+			"suffer" => 88
+		];
+		$transitions = [
+			"middle" => ["defend", "attack"],
+			"defend" => ["suffer", "middle"],
+			"attack" => ["middle", "score"],
+			"suffer" => [-1, "defend"],
+			"score" => ["attack", 1]
+		];
+		
+		$current_state = "middle";
+		$goal_1 = 0;
+		$goal_2 = 0;
+		for ($i = 0; $i < 90; $i++) {
+			$p = $weigths[$current_state];
+			$result = $this->event($p);
+			$next_state = $result ? $transitions[$current_state][1] : $transitions[$current_state][0];
+			if ($next_state == -1) {
+				$goal_2++;
+				$current_state = "middle";
+			} elseif ($next_state == 1) {
+				$goal_1++;
+				$current_state = "middle";
+			} else {
+				$current_state = $next_state;
+			}
+		}
+		$match->played = true;
+		$match->goal1 = $goal_1;
+		$match->goal2 = $goal_2;
+		
+		$this->db->update($match);
+	}
+	
+	private function event($perc) {
+		return mt_rand(1, 100) < $perc;
+	}
+	
+	private function getPercentOf($n, $perc) {
+		return ($perc * $n) / 100;
 	}
 	
 	// tags
