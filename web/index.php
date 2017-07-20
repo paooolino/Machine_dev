@@ -363,7 +363,6 @@ $machine->addAction("/sample-database/player/", "GET", function($machine) {
 
 // database initialization
 $machine->addAction("/init/", "GET", function($machine) {
-	/*
 	file_get_contents($machine->siteurl . "/sample-database/nuke/");
 	file_get_contents($machine->siteurl . "/sample-database/league/");
 	file_get_contents($machine->siteurl . "/sample-database/user/");
@@ -377,7 +376,6 @@ $machine->addAction("/init/", "GET", function($machine) {
 	$machine->plugin("App")->assignSportrights(10);
 	$machine->plugin("App")->createStandings();
 	$machine->plugin("App")->createFixtures(10);
-	*/
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

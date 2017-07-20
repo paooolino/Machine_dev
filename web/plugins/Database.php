@@ -35,6 +35,10 @@ class Database {
 		return \RedBeanPHP\R::find($collectionName, " " . $whereSQL . " ", $boundData);
 	}
 	
+	public function findOne($collectionName, $whereSQL, $boundData = []) {
+		return \RedBeanPHP\R::findOne($collectionName, " " . $whereSQL . " ", $boundData);
+	}
+	
 	public function getItem($table, $id) {
 		return \RedBeanPHP\R::load($table, $id);
 	}

@@ -118,7 +118,7 @@ class App {
 	}
 	
 	public function getStandings($league_level) {
-		return $this->db->find("standing", "league_id = ?", [$league_level]);
+		return $this->db->find("standing", "league_id = ? ORDER BY points DESC", [$league_level]);
 	}
 	
 	public function getNextMatches($league_level) {
@@ -161,14 +161,28 @@ class App {
 	}
 	
 	private function playMatch($match) {
+		$team1 = $match->fetchAs("team")->team1;
+		$team2 = $match->fetchAs("team")->team2;
+		
 		// weights are related to team 1 probability of win
 		$weigths = [
-			"middle" => 50,
-			"attack" => 25,
-			"score" => 12,
-			"defend" => 75,
-			"suffer" => 88
+			"suffer" => 90,	// keeper vs opponent attackers
+			"defend" => 80, // defenders vs opponent attackers
+			"middle" => 50, // midfielders
+			"attack" => 20, // attackers vs opponent defenders
+			"score" => 10		// attackers vs opponent keeper
 		];
+		
+		// modify weight based on team values
+		$s1 = $team1->strenght;
+		$s2 = $team2->strenght;
+		$f1 = $team1->form;
+		$f2 = $team2->form;
+		$p1 = $this->getPercentOf($s1, $f1);
+		$p2 = $this->getPercentOf($s2, $f2);
+		$weights["middle"] = $this->getPercentOf($p1, $p1 + $p2);
+		
+		// define the state machine
 		$transitions = [
 			"middle" => ["defend", "attack"],
 			"defend" => ["suffer", "middle"],
@@ -194,11 +208,39 @@ class App {
 				$current_state = $next_state;
 			}
 		}
+		
+		// update match
 		$match->played = true;
 		$match->goal1 = $goal_1;
 		$match->goal2 = $goal_2;
-		
 		$this->db->update($match);
+		
+		// update standings
+		$standing1 = $this->db->findOne("standing", "team_id = ?", [$team1->id]);
+		$standing2 = $this->db->findOne("standing", "team_id = ?", [$team2->id]);
+		
+		$standing1->played++;
+		$standing2->played++;
+		$standing1->goalscored += $goal_1;
+		$standing1->goalscored += $goal_2;
+		$standing1->goalconceded += $goal_2;
+		$standing1->goalconceded += $goal_1;	
+		if ($goal_1 > $goal_2) {
+			$standing1->won++;
+			$standing2->lost++;
+			$standing1->points += 3;
+		} elseif($goal_2 > $goal_1) {
+			$standing1->lost++;
+			$standing2->won++;
+			$standing2->points += 3;
+		} else {
+			$standing1->draw++;
+			$standing2->draw++;			
+			$standing1->points += 1;
+			$standing2->points += 1;
+		}
+		$this->db->update($standing1);
+		$this->db->update($standing2);
 	}
 	
 	private function event($perc) {
