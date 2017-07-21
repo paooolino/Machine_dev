@@ -38,12 +38,6 @@ $machine->plugin("Auth")->setDataCallback(function($machine, $user_id) {
 	return $machine->plugin("Database")->getItem("user", $user_id);
 });
 
-// check Auth login in every page
-$machine->plugin("Auth")->checkLogin();
-
-// check if turns to pass
-$machine->plugin("App")->checkTime();
-
 // define forms
 $machine->plugin("Form")->addForm("Register", [
 	"action" => "/register/",
@@ -285,6 +279,14 @@ $machine->addPage("/team/{team_id}/", function($machine, $team_id) {
 	];
 });
 
+// cronjob updates
+// ============================================================================
+$machine->addAction("/cron/passturn/", "GET", function($machine) {
+	$machine->plugin("App")->passTurn();
+	$path = $machine->plugin("Link")->Get("/");
+	$machine->redirect($path);
+});
+
 // ============================================================================
 //	debug/testing
 // ============================================================================
@@ -374,10 +376,10 @@ $machine->addAction("/init/", "GET", function($machine) {
 	file_get_contents($machine->siteurl . "/sample-database/country/");
 	file_get_contents($machine->siteurl . "/sample-database/team/");
 
-	$machine->plugin("App")->createLeagues(5);
-	$machine->plugin("App")->assignSportrights(10);
+	$machine->plugin("App")->createLeagues(5);			// number of leagues
+	$machine->plugin("App")->assignSportrights(10);	// teams per league
 	$machine->plugin("App")->createStandings();
-	$machine->plugin("App")->createFixtures(10);
+	$machine->plugin("App")->createFixtures(0);		// number of offset days before matches start
 	
 	$path = $machine->plugin("Link")->Get("/");
 	$machine->redirect($path);

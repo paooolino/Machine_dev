@@ -136,6 +136,7 @@ class App {
 		$this->db->update($bean);
 	}
 	
+	/*
 	public function checkTime() {
 		$current_turn = intval($this->GetOption("turn"));
 		$time_passed = time() - strtotime($this->GetOption("gameStartedAt"));
@@ -150,8 +151,9 @@ class App {
 			}
 		}
 	}
+	*/
 	
-	private function passTurn() {
+	public function passTurn() {
 		$turn = intval($this->GetOption("turn"));
 		$this->setOption("turn", $turn + 1);
 		$this->updateMatches();

@@ -157,9 +157,9 @@ class Machine {
 		$method = $this->SERVER["REQUEST_METHOD"];
 		$route_matchinfo = $this->match_route($path, $method);
 		if ($route_matchinfo) {
+			// execute callbacks route callbacks.
 			$result = call_user_func_array($route_matchinfo["callback"], $route_matchinfo["params"]);
 			
-			// actions will not execute the following, because their callback always have to redirect.
 			if (isset($result["template"])) {
 				$data = isset($result["data"]) ? $result["data"] : [];
 				$output = $this->get_output_template($result["template"], $data);
